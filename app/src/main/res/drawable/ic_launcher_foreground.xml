@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    Replace this placeholder with your app's launcher icon foreground.
+    For adaptive icons (API 26+), the foreground should be centred within
+    the 108×108 dp canvas with the safe zone from 18dp to 90dp (72dp diameter).
+-->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M54,36 L68,60 L54,72 L40,60 Z" />
+</vector>

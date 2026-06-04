@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    Exclude sensitive user data from both cloud backup and device transfer.
+    Adjust the paths to match your database and DataStore file names.
+    Remove exclusions for data you are comfortable having transferred to a new device.
+-->
+<data-extraction-rules>
+    <cloud-backup>
+        <exclude domain="database" path="myapp_database" />
+        <exclude domain="database" path="myapp_database-shm" />
+        <exclude domain="database" path="myapp_database-wal" />
+        <exclude domain="file" path="datastore/myapp_prefs.preferences_pb" />
+    </cloud-backup>
+    <device-transfer>
+        <exclude domain="database" path="myapp_database" />
+        <exclude domain="database" path="myapp_database-shm" />
+        <exclude domain="database" path="myapp_database-wal" />
+        <exclude domain="file" path="datastore/myapp_prefs.preferences_pb" />
+    </device-transfer>
+</data-extraction-rules>
