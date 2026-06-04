@@ -97,7 +97,6 @@ enum class AppTheme(
 }
 
 // ── Classic light color schemes ───────────────────────────────────────────────
-// Redesigned 2026-05 — see GoFlo Theme Redesign.md
 
 // Coral: vivid coral reef — coral red · lagoon teal · vivid rose-magenta
 private val CoralLight = lightColorScheme(
@@ -169,7 +168,6 @@ private val GreenLight = lightColorScheme(
 )
 
 // ── Classic dark color schemes ────────────────────────────────────────────────
-// Redesigned 2026-05 — see GoFlo Theme Redesign.md
 
 private val CoralDark = darkColorScheme(
     primary             = Color(0xFFFFB4A4),
@@ -238,7 +236,6 @@ private val GreenDark = darkColorScheme(
 )
 
 // ── Fun light color schemes ───────────────────────────────────────────────────
-// Redesigned 2026-05 — see GoFlo Theme Redesign.md
 
 // Summer Candy — bubblegum raspberry · mint aqua · electric violet
 private val SummerCandyLight = lightColorScheme(
@@ -402,7 +399,6 @@ private val ColourHappyLight = lightColorScheme(
 )
 
 // ── Fun dark color schemes ────────────────────────────────────────────────────
-// Redesigned 2026-05 — see GoFlo Theme Redesign.md
 
 private val SummerCandyDark = darkColorScheme(
     primary             = Color(0xFFFFB1CA),
@@ -559,7 +555,6 @@ private val ColourHappyDark = darkColorScheme(
 )
 
 // ── Bold palettes ─────────────────────────────────────────────────────────────
-// Redesigned 2026-05 — see GoFlo Theme Redesign.md
 
 // Dragon Fire — ember red · molten orange · lava-orange
 private val DragonFireLight = lightColorScheme(
@@ -1367,7 +1362,7 @@ private fun standardColorSchemeFor(theme: AppTheme, systemIsDark: Boolean): Colo
     AppTheme.HIGH_CONTRAST_LIGHT -> HighContrastLight
     AppTheme.HIGH_CONTRAST_DARK  -> HighContrastDark
     AppTheme.BLUE_ORANGE         -> BlueOrange
-    AppTheme.CUSTOM              -> CoralLight  // Fallback; GoFloTheme builds the real scheme dynamically
+    AppTheme.CUSTOM              -> CoralLight  // Fallback; MyAppTheme builds the real scheme dynamically
 }
 
 /** Builds a full Material 3 colour scheme from three HSL hue values (0–360°). */

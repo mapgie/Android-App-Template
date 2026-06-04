@@ -1,6 +1,6 @@
 # Android App Template
 
-A production-ready Android app template based on **GoFlo**, a shipping Compose app. Drop in your package name, pick a theme, and build features from day one.
+A production-ready Android app template. Drop in your package name, pick a theme, and build features from day one.
 
 ## What You Get
 
@@ -14,7 +14,7 @@ A production-ready Android app template based on **GoFlo**, a shipping Compose a
 - **CI/CD workflows**: build + lint + tests, changelog enforcement, CodeQL security scan, licence-screen sync
 - **Accessibility tooling**: `a11y_check.py` enforces semantics roles on every `.clickable {}` modifier
 - **Versioning policy** baked into CLAUDE.md and the changelog check workflow
-- **LESSONS.md** with hard-won lessons from the GoFlo project
+- **LESSONS.md** with hard-won lessons from production app development
 
 ## Quick Start
 
@@ -158,8 +158,3 @@ See `CLAUDE.md` for the full accessibility rules.
 
 The manifest ships with cloud backup and device transfer **disabled**. If your app does not handle sensitive data and you want system backup enabled, remove `android:allowBackup="false"` and clear `backup_rules.xml` and `data_extraction_rules.xml`.
 
----
-
-## Derived from GoFlo
-
-This template was extracted from [GoFlo](https://github.com/mapgie/goflo), a production period-tracking app. The theme system, CI tooling, accessibility patterns, and lessons in `LESSONS.md` were all battle-tested there. Package-specific content (period tracking, health data, biometrics, alarm reminders) has been stripped; the infrastructure has been kept.

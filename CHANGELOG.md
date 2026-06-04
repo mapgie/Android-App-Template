@@ -22,4 +22,4 @@ Rules:
 ## [0.1.0-beta.1] - 2026-06-03
 
 ### Added
-- Initial template scaffold from GoFlo: Compose + Material 3 theme system, Room database setup, DataStore preferences, CI/CD workflows, accessibility tooling, and LESSONS.md
+- Initial template scaffold: Compose + Material 3 theme system, Room database setup, DataStore preferences, CI/CD workflows, accessibility tooling, and LESSONS.md

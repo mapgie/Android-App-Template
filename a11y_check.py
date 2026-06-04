@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-a11y_check.py — Accessibility role checker for GoFlo.
+a11y_check.py — Accessibility role checker for Compose apps.
 
 Scans Compose source files for .clickable / .combinedClickable modifier chains
 that lack a companion .semantics { role = Role.* } declaration.
