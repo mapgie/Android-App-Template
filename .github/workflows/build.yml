@@ -1,0 +1,77 @@
+name: Build & Release APK
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - "**/*.kt"
+      - "**/*.xml"
+      - "**/*.gradle.kts"
+      - "gradle/libs.versions.toml"
+      - "gradle/wrapper/**"
+      - "gradle.properties"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Accessibility role check
+        run: python3 a11y_check.py --fails-only
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+
+      - name: Setup Gradle 8.13
+        uses: gradle/actions/setup-gradle@v3
+        with:
+          gradle-version: '8.13'
+          cache-read-only: false
+
+      - name: Write local.properties
+        run: echo "sdk.dir=$ANDROID_SDK_ROOT" > local.properties
+
+      - name: Build debug APK
+        run: gradle :app:assembleDebug --no-daemon
+
+      - name: Check version is new
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          VERSION=$(grep 'versionName' app/build.gradle.kts | grep -oP '"[^"]+"' | tr -d '"')
+          echo "VERSION=${VERSION}" >> $GITHUB_ENV
+          if gh release view "v${VERSION}" &>/dev/null; then
+            echo "::error::v${VERSION} is already released. Bump versionName (and versionCode) in app/build.gradle.kts before merging."
+            exit 1
+          fi
+          echo "Version ${VERSION} is new."
+
+      - name: Run unit tests
+        run: gradle :app:test --no-daemon
+
+      - name: Run lint
+        run: gradle :app:lintDebug --no-daemon
+
+      - name: Rename APK and create GitHub Release
+        if: github.event_name == 'workflow_dispatch'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          APP_NAME=$(grep 'rootProject.name' settings.gradle.kts | grep -oP '"[^"]+"' | tr -d '"')
+          APK_NAME="${APP_NAME}-${{ env.VERSION }}-debug.apk"
+          mv app/build/outputs/apk/debug/app-debug.apk \
+             app/build/outputs/apk/debug/${APK_NAME}
+          gh release create "v${{ env.VERSION }}" \
+            "app/build/outputs/apk/debug/${APK_NAME}" \
+            --title "${APP_NAME} v${{ env.VERSION }}" \
+            --notes "Debug build — enable 'Install unknown apps' in Android settings to sideload."
