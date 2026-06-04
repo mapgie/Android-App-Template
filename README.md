@@ -20,13 +20,29 @@ A production-ready Android app template. Drop in your package name, pick a theme
 
 ### 1. Rename the package
 
-Do a **global search-and-replace** across the entire project:
+Run the included init script:
+
+```bash
+python3 init.py YourAppName com.your.package
+# Example:
+python3 init.py TaskTracker com.acme.tasktracker
+```
+
+This replaces all placeholder strings, renames the source directory, and renames `MyApplication.kt`. Delete `init.py` and commit when done.
+
+<details>
+<summary>Prefer to do it manually?</summary>
+
+Do a global search-and-replace across the entire project:
 
 | Find | Replace with |
 |---|---|
 | `com.example.myapp` | `your.package.name` |
-| `MyApp` | `YourAppName` |
-| `MyApplication` | `YourAppClass` |
+| `MyAppTypography` | `YourAppTypography` |
+| `MyAppTheme` | `YourAppTheme` |
+| `MyApplication` | `YourAppApplication` |
+| `Theme.MyApp` | `Theme.YourApp` |
+| `MyApp` | `YourApp` |
 | `myapp_database` | `yourapp_database` |
 | `myapp_prefs` | `yourapp_prefs` |
 
@@ -35,6 +51,7 @@ Then rename the source directory:
 app/src/main/java/com/example/myapp/
   → app/src/main/java/your/package/name/
 ```
+</details>
 
 ### 2. Set your version
 
