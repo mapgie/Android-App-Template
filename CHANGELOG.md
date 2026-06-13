@@ -19,6 +19,13 @@ Rules:
 
 ---
 
+## [0.2.0-beta.1] - 2026-06-13
+
+### Added
+- `permission/PermissionHelper.kt`: Settings deep links for exact alarms (API 31+) and notifications, for apps that schedule reminders. See LESSONS.md for the "denied permission needs a Settings link" pattern.
+
+---
+
 ## [0.1.0-beta.1] - 2026-06-03
 
 ### Added
