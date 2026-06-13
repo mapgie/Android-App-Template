@@ -47,6 +47,9 @@ If `SheetState` (or similar stateful objects) is created inside a composable, it
 **Never hardcode colours in TextStyle / typography**
 Hardcoded colours in `TextStyle` entries override Material3's `LocalContentColor`, breaking contrast in non-default themes. Always omit `color` from `TextStyle` and let the theme propagate it.
 
+**Denied "exact alarms" / notifications permissions need a Settings link, not a retry**
+`AlarmManager.canScheduleExactAlarms()` (API 31+) and the `POST_NOTIFICATIONS` runtime permission can't be re-prompted with the normal permission dialog once denied — calling the same request again is a no-op. If your app schedules reminders, a denied permission silently means "nothing fires", with no indication to the user why. Use `permission/PermissionHelper.kt` to deep-link into the right Settings screen (`Settings.ACTION_REQUEST_SCHEDULE_EXACT_ALARM` with a `package:` URI, or `Settings.ACTION_APP_NOTIFICATION_SETTINGS`), and surface the current state in your settings screen. Re-check the permission state on `ON_RESUME` (via a `LifecycleEventObserver`) since the user returns from the Settings app without the Activity restarting.
+
 ---
 
 ### UI / UX
