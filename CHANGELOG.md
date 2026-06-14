@@ -19,6 +19,13 @@ Rules:
 
 ---
 
+## [0.2.1-beta.1] - 2026-06-14
+
+### Added
+- `docs/SETTINGS_PATTERN.md`: documents the Settings screen structure (flat list + enum-routed sub-screens), reusable composables (`SettingsSectionHeader`, `SettingsNavItem`, `SettingsSubScreenScaffold`, `SwitchRow`), the About sub-screen layout, and the "What's New" changelog dialog with its Markdown parser, modelled on GoFlo's implementation.
+
+---
+
 ## [0.2.0-beta.1] - 2026-06-13
 
 ### Added
