@@ -51,6 +51,7 @@ Promote to release     → 1.4.2-beta.1 → 1.4.2           (versionCode +1)
 
 ## Architecture Notes
 
+- **Settings screen:** Follow the structure, reusable composables, and "What's New" changelog dialog pattern documented in `docs/SETTINGS_PATTERN.md`. Use it when building or extending the Settings feature so it stays consistent across apps built from this template.
 - **UI layer:** Jetpack Compose + Material 3, MVVM with ViewModels; navigation via Compose Navigation (single Activity)
 - **Data layer:** Room (SQLite) for relational data; DataStore for user preferences — always add a migration for schema changes, never use `fallbackToDestructiveMigration`
 - **Theme:** 19 pre-built palettes (light, dark, system-following) plus WCAG accessibility variants and a custom HSL picker; all in `ui/theme/Color.kt`. Brand font configured in `ui/theme/Type.kt` — replace Comfortaa with your own choice.
