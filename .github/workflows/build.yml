@@ -14,7 +14,7 @@ permissions:
   contents: write
 jobs:
   build:
-    uses: mapgie/android-Actions/.github/workflows/android-build-release.yml@87b0b6408e7168235e4977377add51c312ebab71
+    uses: mapgie/android-Actions/.github/workflows/android-build-release.yml@dd75ec70a809295343d167556395fc3cfddb0242
     with:
       # Apps generated from this template should change "MyApp" to their
       # own display name (used for the APK filename and release title).
