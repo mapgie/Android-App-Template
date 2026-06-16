@@ -1,5 +1,6 @@
 package com.example.myapp.notification
 
+import android.annotation.SuppressLint
 import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.app.PendingIntent
@@ -95,6 +96,10 @@ object NotificationHelper {
      * @param channelId  One of the CHANNEL_APP_REMINDERS_* constants. Defaults to the
      *                   standard notification channel.
      */
+    // POST_NOTIFICATIONS is opt-in in this template (commented out in AndroidManifest.xml).
+    // The runtime guard below ensures notify() is a no-op until the app declares and holds
+    // the permission. Lint suppressions acknowledge this intentional opt-in design.
+    @SuppressLint("MissingPermission", "NotificationPermission")
     fun showReminder(
         context: Context,
         id: String,
