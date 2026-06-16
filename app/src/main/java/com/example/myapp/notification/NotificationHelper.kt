@@ -1,15 +1,17 @@
 package com.example.myapp.notification
 
-import android.annotation.SuppressLint
 import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
+import android.content.pm.PackageManager
 import android.media.AudioAttributes
 import android.media.RingtoneManager
+import android.os.Build
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
+import androidx.core.content.ContextCompat
 import com.example.myapp.MainActivity
 import com.example.myapp.R
 
@@ -93,7 +95,6 @@ object NotificationHelper {
      * @param channelId  One of the CHANNEL_APP_REMINDERS_* constants. Defaults to the
      *                   standard notification channel.
      */
-    @SuppressLint("MissingPermission")
     fun showReminder(
         context: Context,
         id: String,
@@ -123,7 +124,11 @@ object NotificationHelper {
             .setCategory(NotificationCompat.CATEGORY_REMINDER)
             .build()
 
-        NotificationManagerCompat.from(context).notify(notifyId, notification)
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU ||
+            ContextCompat.checkSelfPermission(context, android.Manifest.permission.POST_NOTIFICATIONS)
+                == PackageManager.PERMISSION_GRANTED) {
+            NotificationManagerCompat.from(context).notify(notifyId, notification)
+        }
     }
 
     // TODO: Add app-specific notification methods here.
