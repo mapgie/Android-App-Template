@@ -3,6 +3,7 @@ package com.example.myapp
 import android.app.Application
 import com.example.myapp.data.preferences.AppPreferences
 import com.example.myapp.data.preferences.AppPreferencesStore
+import com.example.myapp.notification.NotificationHelper
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
@@ -22,6 +23,12 @@ class MyApplication : Application() {
 
     override fun onCreate() {
         super.onCreate()
-        // Initialise channels, lifecycle observers, and one-time setup here.
+        NotificationHelper.createChannels(this)
+        // TODO: Uncomment to enable daily background rescheduling of alarms after reboot:
+        // WorkManager.getInstance(this).enqueueUniquePeriodicWork(
+        //     "boot_reschedule",
+        //     ExistingPeriodicWorkPolicy.KEEP,
+        //     PeriodicWorkRequestBuilder<BootWorker>(1, TimeUnit.DAYS).build()
+        // )
     }
 }

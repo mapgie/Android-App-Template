@@ -279,6 +279,76 @@ About sub-screen's "What's New" button:
 writes the root `CHANGELOG.md` should also copy it into `app/src/main/assets/`
 so the in-app dialog always matches the released history.
 
+## Notification Infrastructure
+
+The template ships a ready-to-wire notification skeleton. Uncomment the manifest blocks
+and permission declarations in `AndroidManifest.xml` when your app needs reminders or
+alarms.
+
+### Three-channel pattern
+
+`notification/NotificationHelper.kt` creates three notification channels on first run
+(and on every cold start via `MyApplication.onCreate`):
+
+| Constant | Channel ID | Behaviour |
+|---|---|---|
+| `CHANNEL_APP_REMINDERS_ALARM` | `app_reminders_alarm_v1` | Alarm sound, vibration, DND bypass if granted |
+| `CHANNEL_APP_REMINDERS_NOTIF` | `app_reminders_notif_v1` | Notification sound, vibration |
+| `CHANNEL_APP_REMINDERS_SILENT` | `app_reminders_silent_v1` | No sound, no vibration |
+
+Channel properties are immutable once created on a device. If you need to change
+importance, sound, or vibration on existing installs, use a new channel ID and delete the
+old one in `createChannels()`.
+
+Pass `deliveryMode = "ALARM"`, `"NOTIFICATION"` (default), or `"SILENT"` to
+`AlarmScheduler.schedule()`. `AlarmReceiver` maps this string to the matching channel
+constant before calling `NotificationHelper.showReminder()`.
+
+### AlarmScheduler
+
+`alarm/AlarmScheduler.kt` is a Hilt `@Singleton` that wraps `AlarmManager`:
+
+```kotlin
+alarmScheduler.schedule(id, title, fireAt)           // defaults to NOTIFICATION channel
+alarmScheduler.schedule(id, title, fireAt, "ALARM")  // alarm channel
+alarmScheduler.cancel(id)
+```
+
+`schedule()` is a no-op if `fireAt` is in the past or if `canScheduleExactAlarms()`
+returns false (Android 12+). Surface the permission prompt via `PermissionHelper` before
+calling `schedule()` if your app targets API 31+.
+
+### AlarmActionReceiver: snooze and dismiss
+
+`alarm/AlarmActionReceiver.kt` handles two broadcast actions sent from notification
+action buttons:
+
+- `ACTION_SNOOZE` (`com.example.myapp.ACTION_SNOOZE`): cancels the notification and
+  reschedules it 15 minutes later via `AlarmScheduler.schedule()`.
+- `ACTION_DISMISS` (`com.example.myapp.ACTION_DISMISS`): cancels the notification only.
+
+Add `ACTION_DONE` to mark items complete in your data layer (see the TODO comment in the
+file). Wire up `PendingIntent.getBroadcast(...)` targeting `AlarmActionReceiver` inside
+`NotificationHelper.showReminder()` (or your own app-specific notification method) and
+pass the ID and title as extras matching `AlarmReceiver.EXTRA_ID` /
+`AlarmReceiver.EXTRA_TITLE`.
+
+### BootWorker: rescheduling after reboot
+
+`alarm/BootReceiver.kt` listens for `BOOT_COMPLETED` and `MY_PACKAGE_REPLACED`, calls
+`NotificationHelper.createChannels()`, and enqueues a one-time `BootWorker`.
+
+`alarm/BootWorker.kt` is a `@HiltWorker` (requires the Hilt WorkManager integration).
+Fill in the TODO block to reload pending reminders from your repository and call
+`AlarmScheduler.schedule()` for each one — the OS cancels all `AlarmManager` alarms on
+reboot, so this is the only way to restore them.
+
+To activate the boot path:
+1. Uncomment the permission and receiver blocks in `AndroidManifest.xml`.
+2. Add `@HiltAndroidApp` to `MyApplication` and set up the Hilt `WorkManagerInitializer`
+   (see `HiltWorkerFactory` docs).
+3. Fill in the repository call in `BootWorker.doWork()`.
+
 ## Accessibility checklist for Settings
 
 - Every `SettingsNavItem` and other clickable row: `.semantics { role = Role.Button }`

@@ -1,0 +1,12 @@
+{
+  "bump": "minor",
+  "added": [
+    "Notification infrastructure: three-channel system (Alarm, Notification, Silent) ready to wire up",
+    "AlarmScheduler, AlarmReceiver, and AlarmActionReceiver with snooze and dismiss actions",
+    "BootWorker to reschedule alarms after device reboot",
+    "WorkManager dependency added"
+  ],
+  "changed": [
+    "SETTINGS_PATTERN.md updated to document the implemented notification and settings patterns"
+  ]
+}
