@@ -1,0 +1,10 @@
+{
+  "bump": "minor",
+  "added": [
+    "Full settings screen with Appearance and About sub-screens",
+    "CompactThemePicker with palette grid, Light/Dark/System toggle, WCAG mode, and custom HSL builder",
+    "What's New changelog dialog reads from bundled CHANGELOG.md",
+    "Open-source licenses screen with tappable license links",
+    "Subtle clickable version number on the Home screen opens the changelog"
+  ]
+}
