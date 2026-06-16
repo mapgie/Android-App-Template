@@ -3,6 +3,7 @@ plugins {
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.compose)
     alias(libs.plugins.ksp)
+    alias(libs.plugins.hilt)
 }
 
 android {
@@ -13,8 +14,8 @@ android {
         applicationId = "com.example.myapp"
         minSdk = 26
         targetSdk = 34
-        versionCode = 3
-        versionName = "0.2.1-beta.1"
+        versionCode = 4
+        versionName = "0.3.0-beta.1"
     }
 
     signingConfigs {
@@ -76,6 +77,11 @@ dependencies {
     implementation(libs.androidx.datastore.preferences)
     implementation(libs.kotlinx.coroutines.android)
     implementation(libs.androidx.work.runtime.ktx)
+    implementation(libs.hilt.android)
+    ksp(libs.hilt.android.compiler)
+    implementation(libs.hilt.navigation.compose)
+    implementation(libs.hilt.work)
+    ksp(libs.hilt.compiler)
     debugImplementation(libs.androidx.ui.tooling)
     testImplementation(libs.junit)
 }

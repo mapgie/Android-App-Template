@@ -1,14 +1,26 @@
 package com.example.myapp
 
 import android.app.Application
+import androidx.hilt.work.HiltWorkerFactory
+import androidx.work.Configuration
 import com.example.myapp.data.preferences.AppPreferences
 import com.example.myapp.data.preferences.AppPreferencesStore
 import com.example.myapp.notification.NotificationHelper
+import dagger.hilt.android.HiltAndroidApp
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
+import javax.inject.Inject
 
-class MyApplication : Application() {
+@HiltAndroidApp
+class MyApplication : Application(), Configuration.Provider {
+
+    @Inject lateinit var workerFactory: HiltWorkerFactory
+
+    override val workManagerConfiguration: Configuration
+        get() = Configuration.Builder()
+            .setWorkerFactory(workerFactory)
+            .build()
 
     val preferencesStore by lazy { AppPreferencesStore(this) }
 

@@ -34,6 +34,7 @@ import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.compose.ui.graphics.drawscope.clipPath
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.role
 import androidx.compose.ui.semantics.semantics
@@ -303,7 +304,7 @@ private fun PaletteOption(
                 val r = w / 2f
 
                 // 2-tone circle: primary upper-left, accent lower-right
-                androidx.compose.ui.graphics.drawscope.clipPath(
+                clipPath(
                     Path().apply { addOval(Rect(0f, 0f, w, h)) }
                 ) {
                     drawPath(
