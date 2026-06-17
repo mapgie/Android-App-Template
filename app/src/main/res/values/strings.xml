@@ -1,4 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">MyApp</string>
+
+    <!-- Notification channel names and descriptions -->
+    <string name="channel_app_reminders_alarm_name">Alarms</string>
+    <string name="channel_app_reminders_alarm_desc">High-priority reminders that use the alarm sound and can bypass Do Not Disturb.</string>
+    <string name="channel_app_reminders_notif_name">Notifications</string>
+    <string name="channel_app_reminders_notif_desc">Standard reminder notifications with sound and vibration.</string>
+    <string name="channel_app_reminders_silent_name">Silent reminders</string>
+    <string name="channel_app_reminders_silent_desc">Low-priority reminders delivered silently, with no sound or vibration.</string>
 </resources>

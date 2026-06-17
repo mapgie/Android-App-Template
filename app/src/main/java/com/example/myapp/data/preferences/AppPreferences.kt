@@ -13,20 +13,23 @@ private val Context.prefsDataStore by preferencesDataStore(name = "myapp_prefs")
 data class AppPreferences(
     val theme: String = "CORAL",
     val wcagMode: Boolean = false,
+    val deliveryMode: String = "NOTIFICATION",
     // Add more user-configurable preferences here
 )
 
 class AppPreferencesStore(private val context: Context) {
 
     private object Keys {
-        val THEME = stringPreferencesKey("theme")
-        val WCAG_MODE = booleanPreferencesKey("wcag_mode")
+        val THEME         = stringPreferencesKey("theme")
+        val WCAG_MODE     = booleanPreferencesKey("wcag_mode")
+        val DELIVERY_MODE = stringPreferencesKey("delivery_mode")
     }
 
     val preferences: Flow<AppPreferences> = context.prefsDataStore.data.map { prefs ->
         AppPreferences(
-            theme = prefs[Keys.THEME] ?: "CORAL",
-            wcagMode = prefs[Keys.WCAG_MODE] ?: false,
+            theme        = prefs[Keys.THEME] ?: "CORAL",
+            wcagMode     = prefs[Keys.WCAG_MODE] ?: false,
+            deliveryMode = prefs[Keys.DELIVERY_MODE] ?: "NOTIFICATION",
         )
     }
 
@@ -36,5 +39,9 @@ class AppPreferencesStore(private val context: Context) {
 
     suspend fun setWcagMode(enabled: Boolean) {
         context.prefsDataStore.edit { it[Keys.WCAG_MODE] = enabled }
+    }
+
+    suspend fun setDeliveryMode(mode: String) {
+        context.prefsDataStore.edit { it[Keys.DELIVERY_MODE] = mode }
     }
 }

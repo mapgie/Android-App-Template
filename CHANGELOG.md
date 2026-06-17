@@ -19,6 +19,20 @@ Rules:
 
 ---
 
+## [0.3.0-beta.1] - 2026-06-16
+
+### Added
+- Settings screen with Appearance and About sub-screens
+- CompactThemePicker with palette grid, Light/Dark/System toggle, WCAG accessibility mode, and custom HSL builder
+- What's New changelog dialog reads from bundled CHANGELOG.md
+- Open-source licenses screen with tappable license links
+- Subtle clickable version number on the Home screen opens the changelog
+- Notification infrastructure: three-channel system (Alarm, Notification, Silent) ready to configure
+- AlarmScheduler, AlarmReceiver, AlarmActionReceiver with Snooze and Dismiss actions
+- BootWorker reschedules alarms after device reboot
+
+---
+
 ## [0.2.1-beta.1] - 2026-06-14
 
 ### Added

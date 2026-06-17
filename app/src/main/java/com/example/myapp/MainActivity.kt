@@ -25,13 +25,12 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
-import com.example.myapp.data.preferences.AppPreferences
 import com.example.myapp.ui.AppState
 import com.example.myapp.ui.MainViewModel
 import com.example.myapp.ui.navigation.Screen
 import com.example.myapp.ui.screens.home.HomeScreen
+import com.example.myapp.ui.screens.licenses.LicensesScreen
 import com.example.myapp.ui.screens.settings.SettingsScreen
-import com.example.myapp.ui.theme.AppTheme
 import com.example.myapp.ui.theme.AppTheme as AppThemeEnum
 import com.example.myapp.ui.theme.MyAppTheme
 import kotlinx.coroutines.flow.first
@@ -127,9 +126,11 @@ private fun MainNavHost(app: MyApplication) {
             }
             composable(Screen.Settings.route) {
                 SettingsScreen(
-                    preferencesStore = app.preferencesStore,
-                    onBack = { navController.popBackStack() }
+                    onNavigateToLicenses = { navController.navigate(Screen.Licenses.route) }
                 )
+            }
+            composable(Screen.Licenses.route) {
+                LicensesScreen(onBack = { navController.popBackStack() })
             }
         }
     }

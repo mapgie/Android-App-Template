@@ -3,6 +3,7 @@ package com.example.myapp.ui.navigation
 sealed class Screen(val route: String) {
     data object Home : Screen("home")
     data object Settings : Screen("settings")
+    data object Licenses : Screen("licenses")
 
     // Example screen with a required argument:
     // data object Detail : Screen("detail/{itemId}") {
