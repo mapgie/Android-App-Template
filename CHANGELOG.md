@@ -19,6 +19,13 @@ Rules:
 
 ---
 
+## [0.4.0-beta.1] - 2026-06-18
+
+### Added
+- Release workflow: pushing a `v*` tag now builds the release APK and creates a GitHub Release with changelog notes attached. Tags containing `-` (e.g. `-beta.1`) are published as pre-releases automatically. Signing uses repository secrets (`SIGNING_KEY`, `KEY_STORE_PASSWORD`, `KEY_ALIAS`, `KEY_PASSWORD`); falls back to the checked-in debug keystore when secrets are absent.
+
+---
+
 ## [0.3.0-beta.1] - 2026-06-16
 
 ### Added
