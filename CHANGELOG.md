@@ -19,10 +19,17 @@ Rules:
 
 ---
 
+## [0.5.0-beta.1] - 2026-06-19
+
+### Added
+- Tag release workflow: go to Actions > Tag release > Run workflow to create a version tag from the current main branch. The version is read from `app/build.gradle.kts` automatically; the workflow fails safely if the tag already exists, which prevents accidentally re-releasing a version.
+
+---
+
 ## [0.4.0-beta.1] - 2026-06-18
 
 ### Added
-- Release workflow: pushing a `v*` tag now builds the release APK and creates a GitHub Release with changelog notes attached. Tags containing `-` (e.g. `-beta.1`) are published as pre-releases automatically. Signing uses repository secrets (`SIGNING_KEY`, `KEY_STORE_PASSWORD`, `KEY_ALIAS`, `KEY_PASSWORD`); falls back to the checked-in debug keystore when secrets are absent.
+- Release workflow: pushing a `v*` tag builds the release APK and creates a GitHub Release with the matching CHANGELOG section as the body. Tags containing `-` (e.g. `-beta.1`) are published as pre-releases. Signing uses repository secrets (`SIGNING_KEY`, `KEY_STORE_PASSWORD`, `KEY_ALIAS`, `KEY_PASSWORD`); falls back to the checked-in debug keystore when secrets are absent.
 
 ---
 
