@@ -19,6 +19,13 @@ Rules:
 
 ---
 
+## [0.5.2-beta.1] - 2026-06-19
+
+### Changed
+- Version number on the home screen moved from the top bar to a footer at the bottom of the screen.
+
+---
+
 ## [0.5.1-beta.1] - 2026-06-19
 
 ### Changed
