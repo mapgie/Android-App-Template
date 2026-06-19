@@ -22,7 +22,8 @@ Rules:
 ## [0.4.0-beta.1] - 2026-06-18
 
 ### Added
-- Release workflow: pushing a `v*` tag now builds the release APK and creates a GitHub Release with changelog notes attached. Tags containing `-` (e.g. `-beta.1`) are published as pre-releases automatically. Signing uses repository secrets (`SIGNING_KEY`, `KEY_STORE_PASSWORD`, `KEY_ALIAS`, `KEY_PASSWORD`); falls back to the checked-in debug keystore when secrets are absent.
+- Tag release workflow: go to Actions > Tag release > Run workflow to cut a release. The version is read from `app/build.gradle.kts` automatically, a `v*` tag is created and pushed, which triggers the release workflow below.
+- Release workflow: pushing a `v*` tag builds the release APK and creates a GitHub Release with the matching CHANGELOG section as the body. Tags containing `-` (e.g. `-beta.1`) are published as pre-releases. Signing uses repository secrets (`SIGNING_KEY`, `KEY_STORE_PASSWORD`, `KEY_ALIAS`, `KEY_PASSWORD`); falls back to the checked-in debug keystore when secrets are absent.
 
 ---
 

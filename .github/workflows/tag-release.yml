@@ -1,0 +1,37 @@
+name: Tag release
+
+# Go to Actions > Tag release > Run workflow to cut a release from the
+# current default branch. The version is read automatically from
+# app/build.gradle.kts and a v* tag is pushed, which triggers release.yml.
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  tag:
+    name: Create version tag
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Read version from build.gradle.kts
+        id: version
+        run: |
+          version=$(grep -oP 'versionName\s*=\s*"\K[^"]+' app/build.gradle.kts)
+          echo "name=$version" >> "$GITHUB_OUTPUT"
+          echo "Tagging v$version"
+
+      - name: Check tag does not already exist
+        run: |
+          tag="v${{ steps.version.outputs.name }}"
+          if git ls-remote --tags origin "$tag" | grep -q .; then
+            echo "Tag $tag already exists — bump the version before releasing."
+            exit 1
+          fi
+
+      - name: Create and push tag
+        run: |
+          git tag "v${{ steps.version.outputs.name }}"
+          git push origin "v${{ steps.version.outputs.name }}"
