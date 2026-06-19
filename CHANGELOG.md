@@ -19,6 +19,20 @@ Rules:
 
 ---
 
+## [0.5.2-beta.1] - 2026-06-19
+
+### Changed
+- Version number on the home screen moved from the top bar to a footer at the bottom of the screen.
+
+---
+
+## [0.5.1-beta.1] - 2026-06-19
+
+### Changed
+- Licences screen redesigned to group libraries by licence type, show copyright holders, and use the primaryContainer top bar colour, matching the GoFlo app style.
+
+---
+
 ## [0.5.0-beta.1] - 2026-06-19
 
 ### Added
