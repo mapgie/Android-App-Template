@@ -3,6 +3,7 @@ package com.example.myapp
 import android.app.Application
 import androidx.hilt.work.HiltWorkerFactory
 import androidx.work.Configuration
+import com.example.myapp.data.db.AppDatabase
 import com.example.myapp.data.preferences.AppPreferences
 import com.example.myapp.data.preferences.AppPreferencesStore
 import com.example.myapp.notification.NotificationHelper
@@ -28,10 +29,9 @@ class MyApplication : Application(), Configuration.Provider {
     // Use this for fire-and-forget operations tied to the app lifetime, not individual screens.
     val appScope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
 
-    // ── Add lazily-initialised singletons here ────────────────────────────────
-    // Example (uncomment after creating the DB class):
-    // val database by lazy { AppDatabase.getInstance(this) }
-    // val repository by lazy { MyRepository(database.myDao()) }
+    // ── Lazily-initialised singletons ─────────────────────────────────────────
+    val database by lazy { AppDatabase.getInstance(this) }
+    val customColorThemeDao by lazy { database.customColorThemeDao() }
 
     override fun onCreate() {
         super.onCreate()

@@ -14,13 +14,16 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.Palette
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
@@ -41,6 +44,7 @@ import com.example.myapp.BuildConfig
 import com.example.myapp.MyApplication
 import com.example.myapp.ui.theme.AppTheme
 import com.example.myapp.ui.theme.CompactThemePicker
+import com.example.myapp.ui.theme.SavedThemesList
 
 private enum class SettingsSubScreen { APPEARANCE, ABOUT }
 
@@ -50,7 +54,7 @@ fun SettingsScreen(
     onNavigateToLicenses: () -> Unit,
     app: MyApplication = LocalContext.current.applicationContext as MyApplication,
     viewModel: SettingsViewModel = viewModel(
-        factory = SettingsViewModel.Factory(app.preferencesStore)
+        factory = SettingsViewModel.Factory(app.preferencesStore, app.customColorThemeDao)
     ),
 ) {
     var subScreen by rememberSaveable { mutableStateOf<SettingsSubScreen?>(null) }
@@ -116,6 +120,9 @@ private fun AppearanceSubScreen(
 ) {
     val prefs by viewModel.preferences.collectAsState()
     val currentTheme = runCatching { AppTheme.valueOf(prefs.theme) }.getOrDefault(AppTheme.CORAL)
+    val savedThemes  by viewModel.customColorThemes.collectAsState()
+
+    var showSaveDialog by rememberSaveable { mutableStateOf(false) }
 
     SettingsSubScreenScaffold(title = "Appearance", onBack = onBack) { innerPadding ->
         Column(
@@ -132,8 +139,86 @@ private fun AppearanceSubScreen(
                 onThemeSelected = { viewModel.setTheme(it.name) },
                 onWcagToggled   = { viewModel.setWcagMode(it) },
             )
+
+            HorizontalDivider()
+
+            // ── Save current custom theme ─────────────────────────────────────
+            Text(
+                "Saved themes",
+                style = MaterialTheme.typography.titleSmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+
+            OutlinedButton(
+                onClick  = { showSaveDialog = true },
+                enabled  = currentTheme == AppTheme.CUSTOM,
+                modifier = Modifier.fillMaxWidth(),
+            ) {
+                Text("Save current theme")
+            }
+
+            if (currentTheme != AppTheme.CUSTOM) {
+                Text(
+                    "Switch to a custom theme to save it as a profile.",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+            }
+
+            // ── Saved themes list ─────────────────────────────────────────────
+            SavedThemesList(
+                themes          = savedThemes,
+                activeProfileId = prefs.customActiveProfileId,
+                onLoad          = { viewModel.loadCustomColorTheme(it) },
+                onDelete        = { viewModel.deleteCustomColorTheme(it) },
+                onRename        = { theme, name -> viewModel.renameCustomColorTheme(theme, name) },
+            )
         }
     }
+
+    // ── Save-theme name dialog ────────────────────────────────────────────────
+    if (showSaveDialog) {
+        SaveThemeDialog(
+            initialName = "My Theme",
+            onConfirm   = { name ->
+                viewModel.saveCustomColorTheme(name)
+                showSaveDialog = false
+            },
+            onDismiss   = { showSaveDialog = false },
+        )
+    }
+}
+
+@Composable
+private fun SaveThemeDialog(
+    initialName: String,
+    onConfirm:   (String) -> Unit,
+    onDismiss:   () -> Unit,
+) {
+    var name by rememberSaveable { mutableStateOf(initialName) }
+
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title            = { Text("Save theme") },
+        text             = {
+            OutlinedTextField(
+                value         = name,
+                onValueChange = { name = it },
+                singleLine    = true,
+                label         = { Text("Theme name") },
+                modifier      = Modifier.fillMaxWidth(),
+            )
+        },
+        confirmButton = {
+            TextButton(
+                onClick  = { if (name.trim().isNotEmpty()) onConfirm(name.trim()) },
+                enabled  = name.trim().isNotEmpty(),
+            ) { Text("Save") }
+        },
+        dismissButton = {
+            TextButton(onClick = onDismiss) { Text("Cancel") }
+        },
+    )
 }
 
 @Composable
