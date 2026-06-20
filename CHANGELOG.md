@@ -19,6 +19,13 @@ Rules:
 
 ---
 
+## [0.6.0-beta.1] - 2026-06-20
+
+### Added
+- Multiple named custom colour themes: save, load, rename, and delete custom HSL colour profiles from the Appearance settings screen.
+
+---
+
 ## [0.5.2-beta.1] - 2026-06-19
 
 ### Changed
