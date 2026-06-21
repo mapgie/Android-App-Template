@@ -106,6 +106,28 @@ class SettingsViewModel(
         }
     }
 
+    /**
+     * Overwrites the active saved profile with the current hue values and the given name.
+     * No-ops if no profile is currently active.
+     */
+    fun updateCustomColorTheme(name: String) {
+        viewModelScope.launch {
+            val prefs = preferences.value
+            val id = prefs.customActiveProfileId
+            if (id == -1L) return@launch
+            customColorThemeDao.upsert(
+                CustomColorTheme(
+                    id           = id,
+                    name         = name,
+                    primaryHue   = prefs.customPrimaryHue,
+                    secondaryHue = prefs.customSecondaryHue,
+                    tertiaryHue  = prefs.customTertiaryHue,
+                    mode         = "LIGHT",
+                )
+            )
+        }
+    }
+
     class Factory(
         private val preferencesStore: AppPreferencesStore,
         private val customColorThemeDao: CustomColorThemeDao,

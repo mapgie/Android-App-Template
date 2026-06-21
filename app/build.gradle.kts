@@ -14,8 +14,8 @@ android {
         applicationId = "com.example.myapp"
         minSdk = 26
         targetSdk = 34
-        versionCode = 9
-        versionName = "0.6.0-beta.1"
+        versionCode = 10
+        versionName = "0.6.1-beta.1"
     }
 
     signingConfigs {

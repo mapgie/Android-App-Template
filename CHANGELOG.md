@@ -19,6 +19,11 @@ Rules:
 
 ---
 
+## [0.6.1-beta.1] - 2026-06-21
+
+### Changed
+- Custom theme name and save controls are now inline in the Appearance screen rather than a separate dialog. Load a saved theme to get Update and Save as new options.
+
 ## [0.6.0-beta.1] - 2026-06-20
 
 ### Added
