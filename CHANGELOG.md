@@ -19,6 +19,13 @@ Rules:
 
 ---
 
+## [0.6.2-beta.1] - 2026-06-22
+
+### Added
+- Custom palette card in the theme picker: tap it to switch to the custom theme, then use the hue sliders for Primary, Secondary, and Tertiary that appear below.
+
+---
+
 ## [0.6.1-beta.1] - 2026-06-21
 
 ### Changed
