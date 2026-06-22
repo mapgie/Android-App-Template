@@ -15,7 +15,10 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.ChevronRight
+import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
@@ -34,6 +37,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.liveRegion
+import androidx.compose.ui.semantics.LiveRegionMode
 import androidx.compose.ui.semantics.role
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.semantics.stateDescription
@@ -156,6 +162,88 @@ fun SwitchRow(
             checked = checked,
             onCheckedChange = null,
         )
+    }
+}
+
+/**
+ * Inline warning banner shown below a reminder toggle when reminders are enabled but one
+ * or more required permissions are missing. The banner describes which permissions are
+ * absent and provides a "Fix" button that opens the appropriate system Settings page.
+ *
+ * Callers should place this directly below the reminder [SwitchRow] and gate its
+ * visibility on `reminderEnabled && (!hasNotificationPermission || !hasExactAlarmPermission)`.
+ *
+ * Uses [errorContainer] as the background so the colour communicates a genuine problem
+ * without consuming [error] itself (which is reserved for destructive actions).
+ *
+ * @param hasNotificationPermission True when POST_NOTIFICATIONS is granted (always true pre-API 33).
+ * @param hasExactAlarmPermission   True when exact alarms are allowed (always true pre-API 31).
+ * @param onFixNotification         Called when the user taps "Fix" and the notification
+ *                                  permission is the missing one. Launch the runtime permission
+ *                                  dialog or open notification settings from here.
+ * @param onFixExactAlarm           Called when the user taps "Fix" and exact-alarm permission
+ *                                  is the (priority) missing one. Open
+ *                                  [android.provider.Settings.ACTION_REQUEST_SCHEDULE_EXACT_ALARM]
+ *                                  from here.
+ */
+@Composable
+fun PermissionWarningBanner(
+    hasNotificationPermission: Boolean,
+    hasExactAlarmPermission: Boolean,
+    onFixNotification: () -> Unit,
+    onFixExactAlarm: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    val missing = buildList {
+        if (!hasNotificationPermission) add("notification")
+        if (!hasExactAlarmPermission) add("exact alarm")
+    }
+    if (missing.isEmpty()) return
+
+    Card(
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.errorContainer),
+        modifier = modifier.fillMaxWidth(),
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 12.dp, vertical = 10.dp),
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            Icon(
+                imageVector = Icons.Filled.Warning,
+                contentDescription = null,
+                tint = MaterialTheme.colorScheme.error,
+                modifier = Modifier.size(20.dp),
+            )
+            Column(
+                modifier = Modifier
+                    .weight(1f)
+                    .semantics { liveRegion = LiveRegionMode.Assertive },
+            ) {
+                Text(
+                    "Permission required",
+                    style = MaterialTheme.typography.labelMedium,
+                    color = MaterialTheme.colorScheme.onErrorContainer,
+                )
+                Text(
+                    "Grant ${missing.joinToString(" and ")} permission for reminders to work.",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onErrorContainer,
+                )
+            }
+            TextButton(
+                onClick = {
+                    // Exact alarm is the higher-priority fix: without it the alarm cannot
+                    // fire even if notifications are allowed.
+                    if (!hasExactAlarmPermission) onFixExactAlarm() else onFixNotification()
+                },
+                modifier = Modifier.semantics { contentDescription = "Fix missing permissions" },
+            ) {
+                Text("Fix", color = MaterialTheme.colorScheme.error)
+            }
+        }
     }
 }
 

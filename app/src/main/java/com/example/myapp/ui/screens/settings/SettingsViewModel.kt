@@ -45,6 +45,10 @@ class SettingsViewModel(
         viewModelScope.launch { preferencesStore.setDeliveryMode(mode) }
     }
 
+    fun setReminderEnabled(enabled: Boolean) {
+        viewModelScope.launch { preferencesStore.setReminderEnabled(enabled) }
+    }
+
     fun setCustomHues(primaryHue: Float, secondaryHue: Float, tertiaryHue: Float) {
         viewModelScope.launch {
             preferencesStore.setCustomHues(primaryHue, secondaryHue, tertiaryHue)

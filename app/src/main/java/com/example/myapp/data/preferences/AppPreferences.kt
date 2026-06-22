@@ -16,6 +16,7 @@ data class AppPreferences(
     val theme: String = "CORAL",
     val wcagMode: Boolean = false,
     val deliveryMode: String = "NOTIFICATION",
+    val reminderEnabled: Boolean = false,
     // Custom HSL hues for AppTheme.CUSTOM
     val customPrimaryHue: Float = 0f,
     val customSecondaryHue: Float = 120f,
@@ -28,12 +29,13 @@ data class AppPreferences(
 class AppPreferencesStore(private val context: Context) {
 
     private object Keys {
-        val THEME                   = stringPreferencesKey("theme")
-        val WCAG_MODE               = booleanPreferencesKey("wcag_mode")
-        val DELIVERY_MODE           = stringPreferencesKey("delivery_mode")
-        val CUSTOM_PRIMARY_HUE      = floatPreferencesKey("custom_primary_hue")
-        val CUSTOM_SECONDARY_HUE    = floatPreferencesKey("custom_secondary_hue")
-        val CUSTOM_TERTIARY_HUE     = floatPreferencesKey("custom_tertiary_hue")
+        val THEME                    = stringPreferencesKey("theme")
+        val WCAG_MODE                = booleanPreferencesKey("wcag_mode")
+        val DELIVERY_MODE            = stringPreferencesKey("delivery_mode")
+        val REMINDER_ENABLED         = booleanPreferencesKey("reminder_enabled")
+        val CUSTOM_PRIMARY_HUE       = floatPreferencesKey("custom_primary_hue")
+        val CUSTOM_SECONDARY_HUE     = floatPreferencesKey("custom_secondary_hue")
+        val CUSTOM_TERTIARY_HUE      = floatPreferencesKey("custom_tertiary_hue")
         val CUSTOM_ACTIVE_PROFILE_ID = longPreferencesKey("custom_active_profile_id")
     }
 
@@ -42,6 +44,7 @@ class AppPreferencesStore(private val context: Context) {
             theme                  = prefs[Keys.THEME] ?: "CORAL",
             wcagMode               = prefs[Keys.WCAG_MODE] ?: false,
             deliveryMode           = prefs[Keys.DELIVERY_MODE] ?: "NOTIFICATION",
+            reminderEnabled        = prefs[Keys.REMINDER_ENABLED] ?: false,
             customPrimaryHue       = prefs[Keys.CUSTOM_PRIMARY_HUE] ?: 0f,
             customSecondaryHue     = prefs[Keys.CUSTOM_SECONDARY_HUE] ?: 120f,
             customTertiaryHue      = prefs[Keys.CUSTOM_TERTIARY_HUE] ?: 240f,
@@ -59,6 +62,10 @@ class AppPreferencesStore(private val context: Context) {
 
     suspend fun setDeliveryMode(mode: String) {
         context.prefsDataStore.edit { it[Keys.DELIVERY_MODE] = mode }
+    }
+
+    suspend fun setReminderEnabled(enabled: Boolean) {
+        context.prefsDataStore.edit { it[Keys.REMINDER_ENABLED] = enabled }
     }
 
     suspend fun setCustomHues(primaryHue: Float, secondaryHue: Float, tertiaryHue: Float) {
