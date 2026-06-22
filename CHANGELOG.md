@@ -19,10 +19,19 @@ Rules:
 
 ---
 
+## [0.6.3-beta.1] - 2026-06-22
+
+### Added
+- Custom palette card in the theme picker: tap it to switch to the custom theme, then use the hue sliders for Primary, Secondary, and Tertiary that appear below.
+
+---
+
 ## [0.6.2-beta.1] - 2026-06-22
 
 ### Added
 - Notifications settings screen with a Reminders toggle and a `PermissionWarningBanner` that appears when reminders are enabled but notification or exact alarm permissions are not granted.
+
+---
 
 ## [0.6.1-beta.1] - 2026-06-21
 

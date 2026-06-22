@@ -1,5 +1,6 @@
 package com.example.myapp.ui.theme
 
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -25,6 +26,8 @@ import androidx.compose.material.icons.outlined.SettingsBrightness
 import androidx.compose.material.icons.outlined.WbSunny
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Slider
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -36,6 +39,7 @@ import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.drawscope.clipPath
 import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.role
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
@@ -150,6 +154,10 @@ fun CompactThemePicker(
     wcagMode: Boolean,
     onThemeSelected: (AppTheme) -> Unit,
     onWcagToggled: (Boolean) -> Unit,
+    customPrimaryHue: Float = 0f,
+    customSecondaryHue: Float = 120f,
+    customTertiaryHue: Float = 240f,
+    onCustomHuesChange: (Float, Float, Float) -> Unit = { _, _, _ -> },
 ) {
     val currentMode    = currentTheme.themeMode ?: ThemeMode.LIGHT
     val currentPalette = currentTheme.standardPalette
@@ -269,6 +277,30 @@ fun CompactThemePicker(
                 }
             }
         }
+
+        // ── Custom palette card + hue sliders ─────────────────────────────────
+        val customPrimaryPreview   = Color.hsl(customPrimaryHue,   0.5f, 0.4f)
+        val customSecondaryPreview = Color.hsl(customSecondaryHue, 0.4f, 0.4f)
+        val customTertiaryPreview  = Color.hsl(customTertiaryHue,  0.4f, 0.4f)
+
+        CustomPaletteOption(
+            selected       = currentTheme == AppTheme.CUSTOM,
+            primaryColor   = customPrimaryPreview,
+            secondaryColor = customSecondaryPreview,
+            tertiaryColor  = customTertiaryPreview,
+            onClick        = { onThemeSelected(AppTheme.CUSTOM) },
+        )
+
+        AnimatedVisibility(visible = currentTheme == AppTheme.CUSTOM) {
+            Column(
+                modifier            = Modifier.padding(top = 4.dp),
+                verticalArrangement = Arrangement.spacedBy(12.dp),
+            ) {
+                CustomHueSlider("Primary",   customPrimaryHue,   customPrimaryPreview)   { onCustomHuesChange(it, customSecondaryHue, customTertiaryHue) }
+                CustomHueSlider("Secondary", customSecondaryHue, customSecondaryPreview) { onCustomHuesChange(customPrimaryHue, it, customTertiaryHue) }
+                CustomHueSlider("Tertiary",  customTertiaryHue,  customTertiaryPreview)  { onCustomHuesChange(customPrimaryHue, customSecondaryHue, it) }
+            }
+        }
     }
 }
 
@@ -340,6 +372,100 @@ private fun PaletteOption(
             style = MaterialTheme.typography.labelSmall,
             color = if (selected) MaterialTheme.colorScheme.primary
                     else MaterialTheme.colorScheme.onSurfaceVariant,
+        )
+    }
+}
+
+// ── Custom palette card ───────────────────────────────────────────────────────
+
+@Composable
+private fun CustomPaletteOption(
+    selected: Boolean,
+    primaryColor: Color,
+    secondaryColor: Color,
+    tertiaryColor: Color,
+    onClick: () -> Unit,
+) {
+    val borderColor = if (selected) MaterialTheme.colorScheme.primary
+                      else MaterialTheme.colorScheme.outline.copy(alpha = 0.4f)
+    val borderWidth = if (selected) 2.dp else 1.dp
+
+    Surface(
+        modifier = Modifier
+            .fillMaxWidth()
+            .semantics { role = Role.RadioButton }
+            .clickable(onClick = onClick),
+        shape  = RoundedCornerShape(8.dp),
+        border = androidx.compose.foundation.BorderStroke(borderWidth, borderColor),
+        color  = if (selected) MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.3f)
+                 else Color.Transparent,
+    ) {
+        Row(
+            modifier            = Modifier.padding(horizontal = 12.dp, vertical = 10.dp),
+            verticalAlignment   = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(10.dp),
+        ) {
+            Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
+                listOf(primaryColor, secondaryColor, tertiaryColor).forEach { color ->
+                    Box(
+                        modifier = Modifier
+                            .size(20.dp)
+                            .clip(CircleShape)
+                            .background(color)
+                    )
+                }
+            }
+            Text(
+                text  = "Custom",
+                style = MaterialTheme.typography.bodyMedium,
+                color = if (selected) MaterialTheme.colorScheme.primary
+                        else MaterialTheme.colorScheme.onSurface,
+                modifier = Modifier.weight(1f),
+            )
+            if (selected) {
+                Icon(
+                    imageVector        = Icons.Default.Check,
+                    contentDescription = null,
+                    tint               = MaterialTheme.colorScheme.primary,
+                    modifier           = Modifier.size(18.dp),
+                )
+            }
+        }
+    }
+}
+
+// ── Hue slider row ────────────────────────────────────────────────────────────
+
+@Composable
+private fun CustomHueSlider(
+    label: String,
+    hue: Float,
+    previewColor: Color,
+    onHueChange: (Float) -> Unit,
+) {
+    Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
+        Row(
+            verticalAlignment     = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
+        ) {
+            Box(
+                modifier = Modifier
+                    .size(16.dp)
+                    .clip(CircleShape)
+                    .background(previewColor)
+                    .semantics { contentDescription = "$label colour preview" }
+            )
+            Text(
+                text  = label,
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+        }
+        Slider(
+            value         = hue,
+            onValueChange = onHueChange,
+            valueRange    = 0f..360f,
+            modifier      = Modifier.fillMaxWidth(),
         )
     }
 }

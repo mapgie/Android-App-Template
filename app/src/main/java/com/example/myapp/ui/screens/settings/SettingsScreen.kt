@@ -175,10 +175,14 @@ private fun AppearanceSubScreen(
             verticalArrangement = Arrangement.spacedBy(16.dp),
         ) {
             CompactThemePicker(
-                currentTheme    = currentTheme,
-                wcagMode        = prefs.wcagMode,
-                onThemeSelected = { viewModel.setTheme(it.name) },
-                onWcagToggled   = { viewModel.setWcagMode(it) },
+                currentTheme       = currentTheme,
+                wcagMode           = prefs.wcagMode,
+                onThemeSelected    = { viewModel.setTheme(it.name) },
+                onWcagToggled      = { viewModel.setWcagMode(it) },
+                customPrimaryHue   = prefs.customPrimaryHue,
+                customSecondaryHue = prefs.customSecondaryHue,
+                customTertiaryHue  = prefs.customTertiaryHue,
+                onCustomHuesChange = { pH, sH, tH -> viewModel.setCustomHues(pH, sH, tH) },
             )
 
             HorizontalDivider()
