@@ -1,6 +1,15 @@
 package com.example.myapp.ui.screens.settings
 
+import android.app.AlarmManager
+import android.content.Context
+import android.content.Intent
+import android.content.pm.PackageManager
+import android.net.Uri
+import android.os.Build
+import android.provider.Settings
 import androidx.activity.compose.BackHandler
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -14,7 +23,9 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Info
+import androidx.compose.material.icons.filled.Notifications
 import androidx.compose.material.icons.filled.Palette
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.HorizontalDivider
@@ -23,8 +34,10 @@ import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -39,6 +52,10 @@ import androidx.compose.ui.semantics.role
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.core.content.ContextCompat
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleEventObserver
+import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.myapp.BuildConfig
 import com.example.myapp.MyApplication
@@ -46,7 +63,7 @@ import com.example.myapp.ui.theme.AppTheme
 import com.example.myapp.ui.theme.CompactThemePicker
 import com.example.myapp.ui.theme.SavedThemesList
 
-private enum class SettingsSubScreen { APPEARANCE, ABOUT }
+private enum class SettingsSubScreen { APPEARANCE, NOTIFICATIONS, ABOUT }
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -66,6 +83,10 @@ fun SettingsScreen(
     when (subScreen) {
         null -> SettingsMainList(onNavigate = { subScreen = it })
         SettingsSubScreen.APPEARANCE -> AppearanceSubScreen(
+            onBack = { subScreen = null },
+            viewModel = viewModel,
+        )
+        SettingsSubScreen.NOTIFICATIONS -> NotificationsSubScreen(
             onBack = { subScreen = null },
             viewModel = viewModel,
         )
@@ -96,6 +117,16 @@ private fun SettingsMainList(
                 subtitle = "Light, dark, or system theme",
                 icon     = Icons.Filled.Palette,
                 onClick  = { onNavigate(SettingsSubScreen.APPEARANCE) },
+            )
+
+            HorizontalDivider()
+
+            SettingsSectionHeader("Notifications")
+            SettingsNavItem(
+                title    = "Notifications",
+                subtitle = "Reminders and permission settings",
+                icon     = Icons.Filled.Notifications,
+                onClick  = { onNavigate(SettingsSubScreen.NOTIFICATIONS) },
             )
 
             HorizontalDivider()
@@ -265,5 +296,90 @@ private fun AboutSubScreen(
             entries   = entries,
             onDismiss = { showChangelog = false },
         )
+    }
+}
+
+@Composable
+private fun NotificationsSubScreen(
+    onBack: () -> Unit,
+    viewModel: SettingsViewModel,
+) {
+    val prefs by viewModel.preferences.collectAsState()
+    val context = LocalContext.current
+
+    var hasNotificationPermission by remember {
+        mutableStateOf(
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU)
+                ContextCompat.checkSelfPermission(context, android.Manifest.permission.POST_NOTIFICATIONS) == PackageManager.PERMISSION_GRANTED
+            else true
+        )
+    }
+    var hasExactAlarmPermission by remember {
+        mutableStateOf(
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S)
+                (context.getSystemService(Context.ALARM_SERVICE) as AlarmManager).canScheduleExactAlarms()
+            else true
+        )
+    }
+
+    val lifecycleOwner = LocalLifecycleOwner.current
+    DisposableEffect(lifecycleOwner) {
+        val observer = LifecycleEventObserver { _, event ->
+            if (event == Lifecycle.Event.ON_RESUME) {
+                hasNotificationPermission = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU)
+                    ContextCompat.checkSelfPermission(context, android.Manifest.permission.POST_NOTIFICATIONS) == PackageManager.PERMISSION_GRANTED
+                else true
+                hasExactAlarmPermission = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S)
+                    (context.getSystemService(Context.ALARM_SERVICE) as AlarmManager).canScheduleExactAlarms()
+                else true
+            }
+        }
+        lifecycleOwner.lifecycle.addObserver(observer)
+        onDispose { lifecycleOwner.lifecycle.removeObserver(observer) }
+    }
+
+    val notificationPermissionLauncher = rememberLauncherForActivityResult(
+        ActivityResultContracts.RequestPermission()
+    ) { granted -> hasNotificationPermission = granted }
+
+    SettingsSubScreenScaffold(title = "Notifications", onBack = onBack) { innerPadding ->
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .verticalScroll(rememberScrollState())
+                .padding(innerPadding),
+        ) {
+            SwitchRow(
+                label         = "Reminders",
+                supportingText = "Enable reminders and notifications",
+                checked       = prefs.reminderEnabled,
+                onCheckedChange = { viewModel.setReminderEnabled(it) },
+            )
+            if (prefs.reminderEnabled) {
+                PermissionWarningBanner(
+                    hasNotificationPermission = hasNotificationPermission,
+                    hasExactAlarmPermission   = hasExactAlarmPermission,
+                    onFixNotification = {
+                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                            notificationPermissionLauncher.launch(android.Manifest.permission.POST_NOTIFICATIONS)
+                        } else {
+                            context.startActivity(
+                                Intent(Settings.ACTION_APP_NOTIFICATION_SETTINGS)
+                                    .putExtra(Settings.EXTRA_APP_PACKAGE, context.packageName)
+                            )
+                        }
+                    },
+                    onFixExactAlarm = {
+                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+                            context.startActivity(
+                                Intent(Settings.ACTION_REQUEST_SCHEDULE_EXACT_ALARM)
+                                    .apply { data = Uri.fromParts("package", context.packageName, null) }
+                            )
+                        }
+                    },
+                    modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
+                )
+            }
+        }
     }
 }
