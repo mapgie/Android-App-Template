@@ -19,47 +19,7 @@ Rules:
 
 ---
 
-## [0.6.3-beta.1] - 2026-06-22
-
-### Added
-- Custom palette card in the theme picker: tap it to switch to the custom theme, then use the hue sliders for Primary, Secondary, and Tertiary that appear below.
-
----
-
-## [0.6.2-beta.1] - 2026-06-22
-
-### Added
-- Notifications settings screen with a Reminders toggle and a `PermissionWarningBanner` that appears when reminders are enabled but notification or exact alarm permissions are not granted.
-
----
-
-## [0.6.1-beta.1] - 2026-06-21
-
-### Changed
-- Custom theme name and save controls are now inline in the Appearance screen rather than a separate dialog. Load a saved theme to get Update and Save as new options.
-
-## [0.6.0-beta.1] - 2026-06-20
-
-### Added
-- Multiple named custom colour themes: save, load, rename, and delete custom HSL colour profiles from the Appearance settings screen.
-
----
-
-## [0.5.2-beta.1] - 2026-06-19
-
-### Changed
-- Version number on the home screen moved from the top bar to a footer at the bottom of the screen.
-
----
-
-## [0.5.1-beta.1] - 2026-06-19
-
-### Changed
-- Licences screen redesigned to group libraries by licence type, show copyright holders, and use the primaryContainer top bar colour, matching the GoFlo app style.
-
----
-
-## [0.5.0-beta.1] - 2026-06-19
+## [0.5.0-beta.1] - 2026-06-24
 
 ### Added
 - Tag release workflow: go to Actions > Tag release > Run workflow to create a version tag from the current main branch. The version is read from `app/build.gradle.kts` automatically; the workflow fails safely if the tag already exists, which prevents accidentally re-releasing a version.
@@ -69,7 +29,7 @@ Rules:
 ## [0.4.0-beta.1] - 2026-06-18
 
 ### Added
-- Release workflow: pushing a `v*` tag builds the release APK and creates a GitHub Release with the matching CHANGELOG section as the body. Tags containing `-` (e.g. `-beta.1`) are published as pre-releases. Signing uses repository secrets (`SIGNING_KEY`, `KEY_STORE_PASSWORD`, `KEY_ALIAS`, `KEY_PASSWORD`); falls back to the checked-in debug keystore when secrets are absent.
+- Release workflow: pushing a `v*` tag now builds the release APK and creates a GitHub Release with changelog notes attached. Tags containing `-` (e.g. `-beta.1`) are published as pre-releases automatically. Signing uses repository secrets (`SIGNING_KEY`, `KEY_STORE_PASSWORD`, `KEY_ALIAS`, `KEY_PASSWORD`); falls back to the checked-in debug keystore when secrets are absent.
 
 ---
 
