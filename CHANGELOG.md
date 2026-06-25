@@ -19,6 +19,13 @@ Rules:
 
 ---
 
+## [0.5.1-beta.1] - 2026-06-24
+
+### Fixed
+- Custom theme hues are now applied app-wide. Previously selecting the Custom palette had no visible effect because the hue values were never passed to the theme wrapper; the app always rendered the Coral fallback.
+
+---
+
 ## [0.5.0-beta.1] - 2026-06-24
 
 ### Added

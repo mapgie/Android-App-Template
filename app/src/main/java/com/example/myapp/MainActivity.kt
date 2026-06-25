@@ -55,7 +55,15 @@ class MainActivity : ComponentActivity() {
                 AppThemeEnum.valueOf(appPrefs.theme)
             }.getOrDefault(AppThemeEnum.CORAL)
 
-            MyAppTheme(appTheme = currentTheme, wcag = appPrefs.wcagMode) {
+            MyAppTheme(
+                appTheme   = currentTheme,
+                wcag       = appPrefs.wcagMode,
+                customHues = Triple(
+                    appPrefs.customPrimaryHue,
+                    appPrefs.customSecondaryHue,
+                    appPrefs.customTertiaryHue,
+                ),
+            ) {
                 when (appState) {
                     AppState.LOADING -> Box(
                         Modifier.fillMaxSize(),
