@@ -129,6 +129,9 @@ State that captures the user's entire current configuration (e.g. "X axis = Cate
 
 ### Code Quality / Review
 
+**Pin GitHub Actions to a full commit SHA, not a floating version tag**
+Floating tags (`@v4`, `@v7`) can be yanked, deprecated, or removed by the action author. When GitHub cannot resolve the reference at workflow startup, every run fails immediately with `startup_failure` — before any job even starts, so there are no logs to debug from. Always pin to a full 40-character SHA with a version comment: `actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3`. Dependabot keeps these up to date automatically when the `github-actions` ecosystem is enabled in `.github/dependabot.yml`.
+
 **Branch protection blocks force push — use merge, not rebase, for conflict resolution**
 When a branch is protected against force push and upstream has moved on, `git rebase origin/main` rewrites local history that can no longer be pushed. The only forward path is `git merge origin/main`, which creates a merge commit but preserves the existing remote history. If both branches claimed the same version string, resolve by bumping the lower-priority branch's version upward in the same merge commit — don't leave the version collision for the reviewer to spot.
 
