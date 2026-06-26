@@ -19,6 +19,13 @@ Rules:
 
 ---
 
+## [0.5.2-beta.1] - 2026-06-26
+
+### Fixed
+- Pin `actions/checkout` to SHA in `tag-release.yml` and `release.yml`. Both workflows referenced floating version tags (`@v4`, `@v7`) that no longer resolve, causing every Tag release run to fail with `startup_failure` before any job started.
+
+---
+
 ## [0.5.1-beta.1] - 2026-06-24
 
 ### Fixed
