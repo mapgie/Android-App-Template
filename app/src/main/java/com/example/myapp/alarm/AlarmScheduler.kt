@@ -19,8 +19,11 @@ class AlarmScheduler @Inject constructor(
     /**
      * Schedules a reminder to fire at [fireAt].
      *
-     * Does nothing if [fireAt] is in the past or if exact alarms are not permitted
-     * (Android 12+). Present the appropriate permission UI before calling this if needed.
+     * Does nothing if [fireAt] is in the past. Uses an exact alarm when permitted;
+     * without the exact-alarm permission (Android 12+) it falls back to an inexact
+     * alarm, so the reminder is delayed by system batching rather than dropped.
+     * Surface the permission state in your settings UI (see PermissionHelper) so
+     * users can restore exact delivery.
      *
      * @param id           Stable identifier used to cancel or reschedule this alarm.
      * @param title        Human-readable label delivered to [AlarmReceiver] for the notification.
@@ -35,14 +38,21 @@ class AlarmScheduler @Inject constructor(
         deliveryMode: String = "NOTIFICATION",
     ) {
         if (fireAt.isBefore(Instant.now())) return
-        if (!canScheduleExactAlarms()) return
 
         val pending = buildPendingIntent(id, title, deliveryMode)
-        alarmManager.setExactAndAllowWhileIdle(
-            AlarmManager.RTC_WAKEUP,
-            fireAt.toEpochMilli(),
-            pending
-        )
+        if (canScheduleExactAlarms()) {
+            alarmManager.setExactAndAllowWhileIdle(
+                AlarmManager.RTC_WAKEUP,
+                fireAt.toEpochMilli(),
+                pending
+            )
+        } else {
+            alarmManager.setAndAllowWhileIdle(
+                AlarmManager.RTC_WAKEUP,
+                fireAt.toEpochMilli(),
+                pending
+            )
+        }
     }
 
     /**

@@ -144,3 +144,6 @@ A function may accept a flag (`wcag: Boolean = false`) and correctly wire it thr
 
 **Auth state transitions need explicit guards**
 Don't assume UI flow enforces auth invariants. Guard at the data layer: block enabling biometric if no PIN exists; clear dependent auth factors when a prerequisite is removed. Silent auth gaps (biometric enabled, PIN removed, lock screen never triggers) are worse than a visible error.
+
+**Never make "no exact-alarm permission" mean "no reminder at all"**
+`AlarmScheduler.schedule` early-returned when `canScheduleExactAlarms()` was false, so on Android 12+ a revoked or never-granted permission silently dropped every reminder with no error and no fallback. `setExactAndAllowWhileIdle` and `setAndAllowWhileIdle` take the same arguments: branch on the permission and fall back to the inexact variant, so the worst case is a reminder delayed by system batching instead of one that never fires. Pair the fallback with a settings-screen indicator (PermissionHelper) so users can restore exact delivery; the two mechanisms cover different failure modes and both are needed.

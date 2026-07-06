@@ -19,6 +19,13 @@ Rules:
 
 ---
 
+## [0.5.3-beta.1] - 2026-07-06
+
+### Fixed
+- Reminders are no longer silently dropped when the exact-alarm permission is unavailable: `AlarmScheduler.schedule` now falls back to an inexact alarm, so delivery is delayed by system batching rather than skipped entirely.
+
+---
+
 ## [0.5.2-beta.1] - 2026-06-26
 
 ### Fixed
