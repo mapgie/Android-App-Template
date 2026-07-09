@@ -63,6 +63,14 @@ class MainActivity : ComponentActivity() {
                     appPrefs.customSecondaryHue,
                     appPrefs.customTertiaryHue,
                 ),
+                customArgbs = Triple(
+                    appPrefs.customPrimaryArgb,
+                    appPrefs.customSecondaryArgb,
+                    appPrefs.customTertiaryArgb,
+                ),
+                customThemeMode           = appPrefs.customThemeMode,
+                customLightBackgroundArgb = appPrefs.customLightBackgroundArgb,
+                customDarkBackgroundArgb  = appPrefs.customDarkBackgroundArgb,
             ) {
                 when (appState) {
                     AppState.LOADING -> Box(

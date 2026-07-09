@@ -1,6 +1,5 @@
 package com.example.myapp.ui.theme
 
-import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -38,11 +37,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.Path
-import androidx.compose.ui.graphics.drawscope.Stroke
-import androidx.compose.ui.graphics.drawscope.clipPath
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.contentDescription
@@ -56,16 +51,16 @@ import com.example.myapp.data.db.entities.CustomColorTheme
  * Shows a list of user-saved custom colour themes with Load / Delete actions.
  *
  * Each row displays:
- * - A 3-circle colour swatch (primary, secondary, tertiary derived from the saved hues)
+ * - A 3-circle colour swatch showing the theme's saved colours
  * - The theme name (highlighted when active)
  * - A "Load" icon button
  * - A "Delete" icon button (with a confirmation dialog)
  *
- * Long-pressing a row reveals an inline rename field.
+ * Tapping a row loads it. Long-pressing a row reveals an inline rename field.
  *
  * @param themes           The list of saved themes to display.
  * @param activeProfileId  The ID of the currently active profile (-1 for none).
- * @param onLoad           Called when the user taps "Load" for a theme.
+ * @param onLoad           Called when the user taps a row or its "Load" button.
  * @param onDelete         Called after the user confirms deletion of a theme.
  * @param onRename         Called when the user submits a new name for a theme.
  */
@@ -134,7 +129,8 @@ private fun SavedThemeRow(
                 .fillMaxWidth()
                 .semantics { role = Role.Button }
                 .combinedClickable(
-                    onClick      = { /* row tap: no-op; actions are in the icon buttons */ },
+                    onClick      = onLoad,
+                    onClickLabel = "Load theme ${theme.name}",
                     onLongClick  = { renaming = true },
                     onLongClickLabel = "Rename theme",
                 )
@@ -142,11 +138,7 @@ private fun SavedThemeRow(
             verticalAlignment = Alignment.CenterVertically,
         ) {
             // Three colour swatches
-            ThemeSwatches(
-                primaryHue   = theme.primaryHue,
-                secondaryHue = theme.secondaryHue,
-                tertiaryHue  = theme.tertiaryHue,
-            )
+            ThemeSwatches(theme)
 
             Spacer(Modifier.width(10.dp))
 
@@ -261,25 +253,21 @@ private fun SavedThemeRow(
 
 /**
  * Three small overlapping circles showing the primary, secondary, and tertiary
- * hues of a saved custom theme.
+ * colours of a saved custom theme, resolved the same way the applied theme
+ * resolves them (exact ARGB when saved, legacy hue fallback otherwise).
  */
 @Composable
-private fun ThemeSwatches(
-    primaryHue:   Float,
-    secondaryHue: Float,
-    tertiaryHue:  Float,
-) {
+private fun ThemeSwatches(theme: CustomColorTheme) {
     Row(horizontalArrangement = Arrangement.spacedBy((-6).dp)) {
-        HueSwatch(hue = primaryHue,   saturation = 0.60f, lightness = 0.35f)
-        HueSwatch(hue = secondaryHue, saturation = 0.45f, lightness = 0.35f)
-        HueSwatch(hue = tertiaryHue,  saturation = 0.45f, lightness = 0.35f)
+        Swatch(resolveCustomRoleColor(theme.primaryArgb,   theme.primaryHue,   isPrimary = true,  isDark = false))
+        Swatch(resolveCustomRoleColor(theme.secondaryArgb, theme.secondaryHue, isPrimary = false, isDark = false))
+        Swatch(resolveCustomRoleColor(theme.tertiaryArgb,  theme.tertiaryHue,  isPrimary = false, isDark = false))
     }
 }
 
 @Composable
-private fun HueSwatch(hue: Float, saturation: Float, lightness: Float) {
-    val color    = Color.hsl(hue, saturation, lightness)
-    val outline  = MaterialTheme.colorScheme.outline.copy(alpha = 0.3f)
+private fun Swatch(color: Color) {
+    val outline = MaterialTheme.colorScheme.outline.copy(alpha = 0.3f)
     Box(
         modifier = Modifier
             .size(22.dp)

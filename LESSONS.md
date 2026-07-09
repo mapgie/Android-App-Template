@@ -44,6 +44,9 @@ A no-op `onDismissRequest` lets the sheet animate to its hidden state (e.g. via 
 **Hoist SheetState above the composable that uses it**
 If `SheetState` (or similar stateful objects) is created inside a composable, it gets reset on recomposition. Hoist it to the parent screen so it survives the child composable's lifecycle. This also allows the parent to programmatically show/hide the sheet without losing form state.
 
+**Theme-builder parameters must come from user state, not compile-time constants**
+A dynamic colour scheme builder called with a hardcoded flag (`buildCustomColorScheme(..., isDark = false)`) compiles, runs, and looks correct in the default configuration, so the dead branch ships silently — dark mode for custom themes was unreachable for months. Same family of bug: preview swatches drawn with their own S/L constants instead of the values the builder actually applies, so the picker shows colours the theme never uses. Rule: every input the scheme builder takes must be traceable back to persisted user state, and previews must call the same resolution function as the builder (share a single `resolve…()` helper rather than duplicating constants).
+
 **Never hardcode colours in TextStyle / typography**
 Hardcoded colours in `TextStyle` entries override Material3's `LocalContentColor`, breaking contrast in non-default themes. Always omit `color` from `TextStyle` and let the theme propagate it.
 

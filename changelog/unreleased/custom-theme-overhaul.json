@@ -1,0 +1,16 @@
+{
+  "bump": "minor",
+  "added": [
+    "Custom theme: pick exact colours with a full colour picker (saturation/brightness square, hue bar, and hex entry) for primary, secondary, and tertiary roles",
+    "Custom theme: light and dark background colours can now be set directly, with an Auto option that derives them from the primary colour",
+    "Custom theme: Light/Dark/Auto mode support; the mode row now controls the custom theme instead of switching away from it"
+  ],
+  "changed": [
+    "Custom theme previews and saved-theme swatches now show the exact colours the applied theme uses",
+    "Saved custom themes now restore their colours and light/dark mode faithfully, and tapping a saved theme row loads it"
+  ],
+  "fixed": [
+    "Custom themes were always rendered in light mode regardless of the selected mode",
+    "Switching Light/Dark/Auto while the custom theme was active silently switched to the Teal palette"
+  ]
+}

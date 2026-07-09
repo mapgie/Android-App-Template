@@ -13,19 +13,47 @@ fun MyAppTheme(
     appTheme:   AppTheme  = AppTheme.CORAL,
     wcag:       Boolean   = false,
     customHues: Triple<Float, Float, Float>? = null,
+    customArgbs: Triple<Int, Int, Int>? = null,
+    customThemeMode: String = "SYSTEM",
+    customLightBackgroundArgb: Int = 0,
+    customDarkBackgroundArgb: Int = 0,
     content:    @Composable () -> Unit
 ) {
     val systemDark = isSystemInDarkTheme()
+    val customIsDark = when (customThemeMode) {
+        "DARK"  -> true
+        "LIGHT" -> false
+        else    -> systemDark
+    }
     val colorScheme = if (appTheme == AppTheme.CUSTOM && customHues != null) {
-        buildCustomColorScheme(customHues.first, customHues.second, customHues.third, isDark = false)
+        buildCustomColorScheme(
+            primaryHue     = customHues.first,
+            secondaryHue   = customHues.second,
+            tertiaryHue    = customHues.third,
+            primaryArgb    = customArgbs?.first ?: 0,
+            secondaryArgb  = customArgbs?.second ?: 0,
+            tertiaryArgb   = customArgbs?.third ?: 0,
+            backgroundArgb = if (customIsDark) customDarkBackgroundArgb else customLightBackgroundArgb,
+            isDark         = customIsDark,
+        )
     } else {
         colorSchemeFor(appTheme, systemDark, wcag)
     }
 
     val effectivelyDark = when (appTheme) {
+        AppTheme.CUSTOM       -> customIsDark
         AppTheme.SYSTEM,
         AppTheme.CORAL_SYSTEM,
-        AppTheme.GREEN_SYSTEM -> systemDark
+        AppTheme.GREEN_SYSTEM,
+        AppTheme.SUMMER_CANDY_SYSTEM,
+        AppTheme.BEACH_VIBES_SYSTEM,
+        AppTheme.PEACH_MELBA_SYSTEM,
+        AppTheme.DISCO_SYSTEM,
+        AppTheme.METAL_CHICK_SYSTEM,
+        AppTheme.WHIMSY_SYSTEM,
+        AppTheme.COLOUR_HAPPY_SYSTEM,
+        AppTheme.DRAGON_FIRE_SYSTEM,
+        AppTheme.MIDNIGHT_NEON_SYSTEM -> systemDark
         else                  -> appTheme.isDark
     }
 
