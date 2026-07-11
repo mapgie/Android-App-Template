@@ -4,7 +4,7 @@ When fixing a bug or solving a non-obvious problem, check `LESSONS.md` for prior
 
 ## Versioning
 
-Every PR **must** include a version bump and a changelog entry. No exceptions.
+Every PR that touches app code **must** add a changelog fragment. No exceptions.
 
 ### Scheme: `MAJOR.MINOR.PATCH[-prerelease]`
 
@@ -26,11 +26,26 @@ Pre-release suffix: `-beta.N` (increment N for each beta on the same base versio
 
 Current status: **beta** — all versions carry `-beta.N` until explicitly promoted.
 
-### How to bump
+### How to record a change (every PR)
 
-1. Update `versionCode` (always increment by 1) and `versionName` in `app/build.gradle.kts`
-2. Add a new entry at the top of `CHANGELOG.md` following the existing `## [version] - date` format
-3. Include both changes in the same commit as the feature/fix
+Do **not** edit `CHANGELOG.md` or `app/build.gradle.kts`'s `versionCode`/`versionName`
+directly — these are owned by the release automation. Instead, add **one** fragment file
+at `changelog/unreleased/<short-slug>.json`:
+
+```json
+{
+  "bump": "patch",
+  "added": ["..."],
+  "changed": ["..."],
+  "fixed": ["..."]
+}
+```
+
+`bump` is required (`patch`/`minor`/`major`); include only the `added`/`changed`/`fixed`
+sections that apply, each a list of one-line user-facing descriptions. CI
+(`changelog-check.yml`) fails the PR if no valid fragment is added. The "Release"
+workflow consolidates fragments into `CHANGELOG.md` and bumps
+`versionCode`/`versionName`. See `changelog/unreleased/README.md` for details.
 
 ### Changelog immutability rules — NO EXCEPTIONS
 

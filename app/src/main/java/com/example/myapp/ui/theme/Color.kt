@@ -1,9 +1,13 @@
 package com.example.myapp.ui.theme
 
+import android.graphics.Color as AndroidColor
 import androidx.compose.material3.ColorScheme
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.material3.darkColorScheme
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.luminance
+import androidx.compose.ui.graphics.toArgb
+import androidx.core.graphics.ColorUtils
 
 // ── Theme groups ─────────────────────────────────────────────────────────────
 
@@ -1365,74 +1369,155 @@ private fun standardColorSchemeFor(theme: AppTheme, systemIsDark: Boolean): Colo
     AppTheme.CUSTOM              -> CoralLight  // Fallback; MyAppTheme builds the real scheme dynamically
 }
 
-/** Builds a full Material 3 colour scheme from three HSL hue values (0–360°). */
+// ── Custom colour scheme builder ─────────────────────────────────────────────
+
+private fun Color.hueDegrees(): Float {
+    val hsv = FloatArray(3)
+    AndroidColor.colorToHSV(toArgb(), hsv)
+    return hsv[0]
+}
+
+private fun Color.toHslArray(): FloatArray {
+    val hsl = FloatArray(3)
+    ColorUtils.colorToHSL(toArgb(), hsl)
+    return hsl
+}
+
+/** Near-black on bright colours, white on dark colours — keeps text legible on any pick. */
+private fun contrastingOn(color: Color): Color =
+    if (color.luminance() > 0.35f) Color(0xFF1C1B1F) else Color.White
+
+/**
+ * Builds a full Material 3 colour scheme for [AppTheme.CUSTOM].
+ *
+ * Each role uses the exact picked ARGB when set (non-zero), so the applied
+ * theme matches the picker swatch in both light and dark mode. The hue
+ * parameters are the legacy slider values and act as fallbacks for
+ * installs/profiles that predate the ARGB picker. Containers, neutrals, and
+ * on-colours are derived from the resolved colours, with on-colours chosen by
+ * relative luminance so they stay legible whatever the user picks.
+ *
+ * [backgroundArgb] overrides background/surface for the current mode; 0 keeps
+ * the background derived from the primary colour.
+ */
 fun buildCustomColorScheme(
-    primaryHue:   Float,
-    secondaryHue: Float,
-    tertiaryHue:  Float,
-    isDark:       Boolean,
-): ColorScheme = if (isDark) {
-    darkColorScheme(
-        primary             = Color.hsl(primaryHue,   0.75f, 0.75f),
-        onPrimary           = Color.hsl(primaryHue,   0.75f, 0.10f),
-        primaryContainer    = Color.hsl(primaryHue,   0.55f, 0.25f),
-        onPrimaryContainer  = Color.hsl(primaryHue,   0.55f, 0.90f),
-        secondary           = Color.hsl(secondaryHue, 0.55f, 0.70f),
-        onSecondary         = Color.hsl(secondaryHue, 0.55f, 0.10f),
-        secondaryContainer  = Color.hsl(secondaryHue, 0.40f, 0.25f),
-        onSecondaryContainer= Color.hsl(secondaryHue, 0.40f, 0.90f),
-        tertiary            = Color.hsl(tertiaryHue,  0.55f, 0.70f),
-        onTertiary          = Color.hsl(tertiaryHue,  0.55f, 0.10f),
-        tertiaryContainer   = Color.hsl(tertiaryHue,  0.40f, 0.25f),
-        onTertiaryContainer = Color.hsl(tertiaryHue,  0.40f, 0.90f),
-        background          = Color.hsl(primaryHue, 0.05f, 0.10f),
-        onBackground        = Color.hsl(primaryHue, 0.10f, 0.90f),
-        surface             = Color.hsl(primaryHue, 0.05f, 0.12f),
-        onSurface           = Color.hsl(primaryHue, 0.10f, 0.90f),
-        surfaceVariant      = Color.hsl(primaryHue, 0.15f, 0.20f),
-        onSurfaceVariant    = Color.hsl(primaryHue, 0.10f, 0.75f),
-        outline             = Color.hsl(primaryHue, 0.10f, 0.55f),
-        outlineVariant      = Color.hsl(primaryHue, 0.08f, 0.30f),
-        error               = Color(0xFFFFB4AB),
-        onError             = Color(0xFF690005),
-        errorContainer      = Color(0xFF93000A),
-        onErrorContainer    = Color(0xFFFFDAD6),
-        inverseSurface      = Color.hsl(primaryHue, 0.10f, 0.90f),
-        inverseOnSurface    = Color.hsl(primaryHue, 0.05f, 0.15f),
-        inversePrimary      = Color.hsl(primaryHue, 0.60f, 0.35f),
-        scrim               = Color.Black,
-        surfaceTint         = Color.hsl(primaryHue, 0.75f, 0.75f),
-    )
-} else {
-    lightColorScheme(
-        primary             = Color.hsl(primaryHue,   0.60f, 0.35f),
-        onPrimary           = Color.White,
-        primaryContainer    = Color.hsl(primaryHue,   0.55f, 0.90f),
-        onPrimaryContainer  = Color.hsl(primaryHue,   0.55f, 0.10f),
-        secondary           = Color.hsl(secondaryHue, 0.45f, 0.35f),
-        onSecondary         = Color.White,
-        secondaryContainer  = Color.hsl(secondaryHue, 0.40f, 0.88f),
-        onSecondaryContainer= Color.hsl(secondaryHue, 0.40f, 0.10f),
-        tertiary            = Color.hsl(tertiaryHue,  0.45f, 0.35f),
-        onTertiary          = Color.White,
-        tertiaryContainer   = Color.hsl(tertiaryHue,  0.40f, 0.88f),
-        onTertiaryContainer = Color.hsl(tertiaryHue,  0.40f, 0.10f),
-        background          = Color.hsl(primaryHue, 0.08f, 0.98f),
-        onBackground        = Color.hsl(primaryHue, 0.25f, 0.10f),
-        surface             = Color.hsl(primaryHue, 0.05f, 0.98f),
-        onSurface           = Color.hsl(primaryHue, 0.25f, 0.10f),
-        surfaceVariant      = Color.hsl(primaryHue, 0.20f, 0.90f),
-        onSurfaceVariant    = Color.hsl(primaryHue, 0.15f, 0.30f),
-        outline             = Color.hsl(primaryHue, 0.10f, 0.55f),
-        outlineVariant      = Color.hsl(primaryHue, 0.08f, 0.80f),
-        error               = Color(0xFFBA1A1A),
-        onError             = Color.White,
-        errorContainer      = Color(0xFFFFDAD6),
-        onErrorContainer    = Color(0xFF410002),
-        inverseSurface      = Color.hsl(primaryHue, 0.20f, 0.20f),
-        inverseOnSurface    = Color.hsl(primaryHue, 0.08f, 0.95f),
-        inversePrimary      = Color.hsl(primaryHue, 0.60f, 0.75f),
-        scrim               = Color.Black,
-        surfaceTint         = Color.hsl(primaryHue, 0.60f, 0.35f),
-    )
+    primaryHue:     Float,
+    secondaryHue:   Float,
+    tertiaryHue:    Float,
+    primaryArgb:    Int = 0,
+    secondaryArgb:  Int = 0,
+    tertiaryArgb:   Int = 0,
+    backgroundArgb: Int = 0,
+    isDark:         Boolean,
+): ColorScheme {
+    fun resolve(argb: Int, hue: Float, darkS: Float, darkL: Float, lightS: Float, lightL: Float): Color = when {
+        argb != 0 -> Color(argb)
+        isDark    -> Color.hsl(hue, darkS, darkL)
+        else      -> Color.hsl(hue, lightS, lightL)
+    }
+
+    val primary   = resolve(primaryArgb,   primaryHue,   0.75f, 0.75f, 0.60f, 0.35f)
+    val secondary = resolve(secondaryArgb, secondaryHue, 0.55f, 0.70f, 0.45f, 0.35f)
+    val tertiary  = resolve(tertiaryArgb,  tertiaryHue,  0.55f, 0.70f, 0.45f, 0.35f)
+
+    // Containers follow the resolved colour's hue (not the raw slider hue) so a
+    // hex-picked colour tints its containers too.
+    val pHue = primary.hueDegrees()
+    val sHue = secondary.hueDegrees()
+    val tHue = tertiary.hueDegrees()
+
+    val background = when {
+        backgroundArgb != 0 -> Color(backgroundArgb)
+        isDark              -> Color.hsl(pHue, 0.05f, 0.10f)
+        else                -> Color.hsl(pHue, 0.08f, 0.98f)
+    }
+    val bg = background.toHslArray()
+    val bgIsLight = background.luminance() > 0.35f
+    val onBackground   = if (bgIsLight) Color.hsl(bg[0], 0.25f, 0.10f) else Color.hsl(bg[0], 0.10f, 0.90f)
+    val surface        = if (isDark) Color.hsl(bg[0], bg[1], (bg[2] + 0.02f).coerceIn(0f, 1f)) else background
+    val surfaceVariant = if (bgIsLight)
+        Color.hsl(bg[0], bg[1].coerceAtMost(0.20f).coerceAtLeast(0.05f), (bg[2] - 0.08f).coerceIn(0f, 1f))
+    else
+        Color.hsl(bg[0], bg[1].coerceAtMost(0.15f), (bg[2] + 0.10f).coerceIn(0f, 1f))
+    val onSurfaceVariant = if (bgIsLight) Color.hsl(bg[0], 0.15f, 0.30f) else Color.hsl(bg[0], 0.10f, 0.75f)
+    val outline          = if (bgIsLight) Color.hsl(bg[0], 0.10f, 0.45f) else Color.hsl(bg[0], 0.10f, 0.55f)
+    val outlineVariant   = if (bgIsLight) Color.hsl(bg[0], 0.08f, 0.80f) else Color.hsl(bg[0], 0.08f, 0.30f)
+    val inverseSurface   = if (bgIsLight) Color.hsl(bg[0], 0.20f, 0.20f) else Color.hsl(bg[0], 0.10f, 0.90f)
+    val inverseOnSurface = if (bgIsLight) Color.hsl(bg[0], 0.08f, 0.95f) else Color.hsl(bg[0], 0.05f, 0.15f)
+
+    return if (isDark) {
+        darkColorScheme(
+            primary             = primary,
+            onPrimary           = contrastingOn(primary),
+            primaryContainer    = Color.hsl(pHue, 0.55f, 0.25f),
+            onPrimaryContainer  = Color.hsl(pHue, 0.55f, 0.90f),
+            secondary           = secondary,
+            onSecondary         = contrastingOn(secondary),
+            secondaryContainer  = Color.hsl(sHue, 0.40f, 0.25f),
+            onSecondaryContainer= Color.hsl(sHue, 0.40f, 0.90f),
+            tertiary            = tertiary,
+            onTertiary          = contrastingOn(tertiary),
+            tertiaryContainer   = Color.hsl(tHue, 0.40f, 0.25f),
+            onTertiaryContainer = Color.hsl(tHue, 0.40f, 0.90f),
+            background          = background,
+            onBackground        = onBackground,
+            surface             = surface,
+            onSurface           = onBackground,
+            surfaceVariant      = surfaceVariant,
+            onSurfaceVariant    = onSurfaceVariant,
+            outline             = outline,
+            outlineVariant      = outlineVariant,
+            error               = Color(0xFFFFB4AB),
+            onError             = Color(0xFF690005),
+            errorContainer      = Color(0xFF93000A),
+            onErrorContainer    = Color(0xFFFFDAD6),
+            inverseSurface      = inverseSurface,
+            inverseOnSurface    = inverseOnSurface,
+            inversePrimary      = Color.hsl(pHue, 0.60f, 0.35f),
+            scrim               = Color.Black,
+            surfaceTint         = primary,
+        )
+    } else {
+        lightColorScheme(
+            primary             = primary,
+            onPrimary           = contrastingOn(primary),
+            primaryContainer    = Color.hsl(pHue, 0.55f, 0.90f),
+            onPrimaryContainer  = Color.hsl(pHue, 0.55f, 0.10f),
+            secondary           = secondary,
+            onSecondary         = contrastingOn(secondary),
+            secondaryContainer  = Color.hsl(sHue, 0.40f, 0.88f),
+            onSecondaryContainer= Color.hsl(sHue, 0.40f, 0.10f),
+            tertiary            = tertiary,
+            onTertiary          = contrastingOn(tertiary),
+            tertiaryContainer   = Color.hsl(tHue, 0.40f, 0.88f),
+            onTertiaryContainer = Color.hsl(tHue, 0.40f, 0.10f),
+            background          = background,
+            onBackground        = onBackground,
+            surface             = surface,
+            onSurface           = onBackground,
+            surfaceVariant      = surfaceVariant,
+            onSurfaceVariant    = onSurfaceVariant,
+            outline             = outline,
+            outlineVariant      = outlineVariant,
+            error               = Color(0xFFBA1A1A),
+            onError             = Color.White,
+            errorContainer      = Color(0xFFFFDAD6),
+            onErrorContainer    = Color(0xFF410002),
+            inverseSurface      = inverseSurface,
+            inverseOnSurface    = inverseOnSurface,
+            inversePrimary      = Color.hsl(pHue, 0.60f, 0.75f),
+            scrim               = Color.Black,
+            surfaceTint         = primary,
+        )
+    }
+}
+
+/**
+ * Resolves the swatch colour previews should show for a custom role, matching
+ * exactly what [buildCustomColorScheme] will apply.
+ */
+fun resolveCustomRoleColor(argb: Int, hue: Float, isPrimary: Boolean, isDark: Boolean): Color = when {
+    argb != 0 -> Color(argb)
+    isDark    -> if (isPrimary) Color.hsl(hue, 0.75f, 0.75f) else Color.hsl(hue, 0.55f, 0.70f)
+    else      -> if (isPrimary) Color.hsl(hue, 0.60f, 0.35f) else Color.hsl(hue, 0.45f, 0.35f)
 }

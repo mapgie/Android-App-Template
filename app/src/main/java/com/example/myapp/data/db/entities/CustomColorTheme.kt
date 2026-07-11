@@ -4,9 +4,13 @@ import androidx.room.Entity
 import androidx.room.PrimaryKey
 
 /**
- * A user-saved custom colour theme identified by three HSL hues and a display name.
- * [mode] is one of "LIGHT", "DARK", or "SYSTEM" and records which variant was active
- * when the theme was saved, so it can be restored faithfully.
+ * A user-saved custom colour theme.
+ *
+ * The exact picked colours live in the ARGB columns (0 = unset). The hue
+ * columns are the legacy pre-ARGB representation and act as fallbacks when the
+ * matching ARGB column is 0, so profiles saved by older versions still load.
+ * [mode] is one of "LIGHT", "DARK", or "SYSTEM" and records which mode was
+ * active when the theme was saved; it is restored on load.
  */
 @Entity(tableName = "custom_color_themes")
 data class CustomColorTheme(
@@ -16,4 +20,9 @@ data class CustomColorTheme(
     val secondaryHue: Float,
     val tertiaryHue: Float,
     val mode: String,  // "LIGHT", "DARK", or "SYSTEM"
+    val primaryArgb: Int = 0,
+    val secondaryArgb: Int = 0,
+    val tertiaryArgb: Int = 0,
+    val lightBackgroundArgb: Int = 0,
+    val darkBackgroundArgb: Int = 0,
 )

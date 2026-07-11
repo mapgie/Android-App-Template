@@ -55,20 +55,40 @@ class SettingsViewModel(
         }
     }
 
+    fun setCustomArgbs(primaryArgb: Int, secondaryArgb: Int, tertiaryArgb: Int) {
+        viewModelScope.launch {
+            preferencesStore.setCustomArgbs(primaryArgb, secondaryArgb, tertiaryArgb)
+        }
+    }
+
+    fun setCustomBackgroundArgbs(lightArgb: Int, darkArgb: Int) {
+        viewModelScope.launch {
+            preferencesStore.setCustomBackgroundArgbs(lightArgb, darkArgb)
+        }
+    }
+
+    fun setCustomThemeMode(mode: String) {
+        viewModelScope.launch { preferencesStore.setCustomThemeMode(mode) }
+    }
+
     /**
-     * Saves the current custom hue values as a named profile.
-     * If a profile with the same ID already exists it is updated in place.
-     * Sets [customActiveProfileId] to the upserted row ID.
+     * Saves the current custom colours as a new named profile and makes it the
+     * active profile.
      */
     fun saveCustomColorTheme(name: String) {
         viewModelScope.launch {
             val prefs = preferences.value
             val theme = CustomColorTheme(
-                name         = name,
-                primaryHue   = prefs.customPrimaryHue,
-                secondaryHue = prefs.customSecondaryHue,
-                tertiaryHue  = prefs.customTertiaryHue,
-                mode         = "LIGHT",  // Custom themes always use the CUSTOM (light) path
+                name                = name,
+                primaryHue          = prefs.customPrimaryHue,
+                secondaryHue        = prefs.customSecondaryHue,
+                tertiaryHue         = prefs.customTertiaryHue,
+                mode                = prefs.customThemeMode,
+                primaryArgb         = prefs.customPrimaryArgb,
+                secondaryArgb       = prefs.customSecondaryArgb,
+                tertiaryArgb        = prefs.customTertiaryArgb,
+                lightBackgroundArgb = prefs.customLightBackgroundArgb,
+                darkBackgroundArgb  = prefs.customDarkBackgroundArgb,
             )
             val id = customColorThemeDao.upsert(theme)
             preferencesStore.setCustomActiveProfileId(id)
@@ -76,12 +96,15 @@ class SettingsViewModel(
     }
 
     /**
-     * Loads a saved profile: writes its hues to DataStore, marks it as active,
-     * and switches the app theme to AppTheme.CUSTOM.
+     * Loads a saved profile: writes its colours and mode to DataStore, marks it
+     * as active, and switches the app theme to AppTheme.CUSTOM.
      */
     fun loadCustomColorTheme(theme: CustomColorTheme) {
         viewModelScope.launch {
             preferencesStore.setCustomHues(theme.primaryHue, theme.secondaryHue, theme.tertiaryHue)
+            preferencesStore.setCustomArgbs(theme.primaryArgb, theme.secondaryArgb, theme.tertiaryArgb)
+            preferencesStore.setCustomBackgroundArgbs(theme.lightBackgroundArgb, theme.darkBackgroundArgb)
+            preferencesStore.setCustomThemeMode(theme.mode)
             preferencesStore.setCustomActiveProfileId(theme.id)
             preferencesStore.setTheme("CUSTOM")
         }
@@ -111,7 +134,7 @@ class SettingsViewModel(
     }
 
     /**
-     * Overwrites the active saved profile with the current hue values and the given name.
+     * Overwrites the active saved profile with the current colours and the given name.
      * No-ops if no profile is currently active.
      */
     fun updateCustomColorTheme(name: String) {
@@ -121,12 +144,17 @@ class SettingsViewModel(
             if (id == -1L) return@launch
             customColorThemeDao.upsert(
                 CustomColorTheme(
-                    id           = id,
-                    name         = name,
-                    primaryHue   = prefs.customPrimaryHue,
-                    secondaryHue = prefs.customSecondaryHue,
-                    tertiaryHue  = prefs.customTertiaryHue,
-                    mode         = "LIGHT",
+                    id                  = id,
+                    name                = name,
+                    primaryHue          = prefs.customPrimaryHue,
+                    secondaryHue        = prefs.customSecondaryHue,
+                    tertiaryHue         = prefs.customTertiaryHue,
+                    mode                = prefs.customThemeMode,
+                    primaryArgb         = prefs.customPrimaryArgb,
+                    secondaryArgb       = prefs.customSecondaryArgb,
+                    tertiaryArgb        = prefs.customTertiaryArgb,
+                    lightBackgroundArgb = prefs.customLightBackgroundArgb,
+                    darkBackgroundArgb  = prefs.customDarkBackgroundArgb,
                 )
             )
         }

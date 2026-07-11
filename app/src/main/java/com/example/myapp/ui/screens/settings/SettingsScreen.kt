@@ -175,14 +175,25 @@ private fun AppearanceSubScreen(
             verticalArrangement = Arrangement.spacedBy(16.dp),
         ) {
             CompactThemePicker(
-                currentTheme       = currentTheme,
-                wcagMode           = prefs.wcagMode,
-                onThemeSelected    = { viewModel.setTheme(it.name) },
-                onWcagToggled      = { viewModel.setWcagMode(it) },
-                customPrimaryHue   = prefs.customPrimaryHue,
-                customSecondaryHue = prefs.customSecondaryHue,
-                customTertiaryHue  = prefs.customTertiaryHue,
-                onCustomHuesChange = { pH, sH, tH -> viewModel.setCustomHues(pH, sH, tH) },
+                currentTheme        = currentTheme,
+                wcagMode            = prefs.wcagMode,
+                onThemeSelected     = { viewModel.setTheme(it.name) },
+                onWcagToggled       = { viewModel.setWcagMode(it) },
+                customPrimaryHue    = prefs.customPrimaryHue,
+                customSecondaryHue  = prefs.customSecondaryHue,
+                customTertiaryHue   = prefs.customTertiaryHue,
+                customPrimaryArgb   = prefs.customPrimaryArgb,
+                customSecondaryArgb = prefs.customSecondaryArgb,
+                customTertiaryArgb  = prefs.customTertiaryArgb,
+                customLightBackgroundArgb = prefs.customLightBackgroundArgb,
+                customDarkBackgroundArgb  = prefs.customDarkBackgroundArgb,
+                customThemeMode     = prefs.customThemeMode,
+                onCustomHuesChange  = { pH, sH, tH -> viewModel.setCustomHues(pH, sH, tH) },
+                onCustomArgbsChange = { p, s, t -> viewModel.setCustomArgbs(p, s, t) },
+                onCustomBackgroundArgbsChange = { light, dark ->
+                    viewModel.setCustomBackgroundArgbs(light, dark)
+                },
+                onCustomThemeModeChange = { viewModel.setCustomThemeMode(it) },
             )
 
             HorizontalDivider()

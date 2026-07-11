@@ -5,6 +5,7 @@ import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -21,15 +22,20 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Check
+import androidx.compose.material.icons.filled.ChevronRight
 import androidx.compose.material.icons.outlined.DarkMode
 import androidx.compose.material.icons.outlined.SettingsBrightness
 import androidx.compose.material.icons.outlined.WbSunny
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Slider
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -38,8 +44,8 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.drawscope.clipPath
+import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.semantics.Role
-import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.role
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
@@ -141,10 +147,16 @@ private val AppTheme.standardPalette: StandardPalette? get() = when (this) {
  *
  * Shows a Light / Dark / Auto mode row, a WCAG accessibility toggle, and a
  * 4-column palette grid. Changing the mode re-selects the same palette in the
- * new mode. Changing the palette keeps the current mode.
+ * new mode; while the custom theme is active the mode row drives the custom
+ * theme's own light/dark/system preference instead. Changing the palette keeps
+ * the current mode.
  *
- * @param currentTheme  The currently active [AppTheme].
- * @param wcagMode      Whether WCAG high-contrast adjustment is enabled.
+ * The custom section shows one row per colour role (primary, secondary,
+ * tertiary) plus light/dark background overrides. Each row opens the shared
+ * [ColorPickerDialog]; the exact picked colour is what the applied theme uses.
+ *
+ * @param currentTheme     The currently active [AppTheme].
+ * @param wcagMode         Whether WCAG high-contrast adjustment is enabled.
  * @param onThemeSelected  Called when the user taps a palette or switches mode.
  * @param onWcagToggled    Called when the user toggles the WCAG switch.
  */
@@ -157,10 +169,26 @@ fun CompactThemePicker(
     customPrimaryHue: Float = 0f,
     customSecondaryHue: Float = 120f,
     customTertiaryHue: Float = 240f,
+    customPrimaryArgb: Int = 0,
+    customSecondaryArgb: Int = 0,
+    customTertiaryArgb: Int = 0,
+    customLightBackgroundArgb: Int = 0,
+    customDarkBackgroundArgb: Int = 0,
+    customThemeMode: String = "SYSTEM",
     onCustomHuesChange: (Float, Float, Float) -> Unit = { _, _, _ -> },
+    onCustomArgbsChange: (Int, Int, Int) -> Unit = { _, _, _ -> },
+    onCustomBackgroundArgbsChange: (Int, Int) -> Unit = { _, _ -> },
+    onCustomThemeModeChange: (String) -> Unit = {},
 ) {
+    val isCustom       = currentTheme == AppTheme.CUSTOM
     val currentMode    = currentTheme.themeMode ?: ThemeMode.LIGHT
     val currentPalette = currentTheme.standardPalette
+    val systemDark     = isSystemInDarkTheme()
+    val customIsDark   = when (customThemeMode) {
+        "DARK"  -> true
+        "LIGHT" -> false
+        else    -> systemDark
+    }
 
     Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
 
@@ -179,7 +207,7 @@ fun CompactThemePicker(
         ) {
             val modes = listOf(ThemeMode.LIGHT, ThemeMode.DARK, ThemeMode.SYSTEM)
             modes.forEachIndexed { index, mode ->
-                val selected = mode == currentMode
+                val selected = if (isCustom) customThemeMode == mode.name else mode == currentMode
                 val modeIcon = when (mode) {
                     ThemeMode.LIGHT  -> Icons.Outlined.WbSunny
                     ThemeMode.DARK   -> Icons.Outlined.DarkMode
@@ -195,14 +223,20 @@ fun CompactThemePicker(
                         )
                         .semantics { role = Role.RadioButton }
                         .clickable {
-                            val palette = currentPalette ?: StandardPalette.TEAL
-                            onThemeSelected(
-                                when (mode) {
-                                    ThemeMode.DARK   -> palette.darkTheme
-                                    ThemeMode.SYSTEM -> palette.systemTheme
-                                    ThemeMode.LIGHT  -> palette.lightTheme
-                                }
-                            )
+                            if (isCustom) {
+                                // Keep the custom theme selected; the mode row
+                                // drives its own light/dark/system preference.
+                                onCustomThemeModeChange(mode.name)
+                            } else {
+                                val palette = currentPalette ?: StandardPalette.TEAL
+                                onThemeSelected(
+                                    when (mode) {
+                                        ThemeMode.DARK   -> palette.darkTheme
+                                        ThemeMode.SYSTEM -> palette.systemTheme
+                                        ThemeMode.LIGHT  -> palette.lightTheme
+                                    }
+                                )
+                            }
                         }
                         .padding(vertical = 10.dp),
                     contentAlignment = Alignment.Center,
@@ -237,13 +271,15 @@ fun CompactThemePicker(
             }
         }
 
-        // ── WCAG toggle ───────────────────────────────────────────────────────
-        SwitchRow(
-            label           = "WCAG accessible colours",
-            supportingText  = "Increases contrast for text and interactive elements",
-            checked         = wcagMode,
-            onCheckedChange = onWcagToggled,
-        )
+        // ── WCAG toggle (standard palettes only — custom colours are exact) ───
+        if (!isCustom) {
+            SwitchRow(
+                label           = "WCAG accessible colours",
+                supportingText  = "Increases contrast for text and interactive elements",
+                checked         = wcagMode,
+                onCheckedChange = onWcagToggled,
+            )
+        }
 
         // ── Colour grid ───────────────────────────────────────────────────────
         Text(
@@ -260,10 +296,11 @@ fun CompactThemePicker(
                     row.forEach { palette ->
                         PaletteOption(
                             palette  = palette,
-                            selected = palette == currentPalette,
+                            selected = !isCustom && palette == currentPalette,
                             onClick  = {
+                                val mode = if (isCustom) ThemeMode.LIGHT else currentMode
                                 onThemeSelected(
-                                    when (currentMode) {
+                                    when (mode) {
                                         ThemeMode.DARK   -> palette.darkTheme
                                         ThemeMode.SYSTEM -> palette.systemTheme
                                         ThemeMode.LIGHT  -> palette.lightTheme
@@ -278,31 +315,78 @@ fun CompactThemePicker(
             }
         }
 
-        // ── Custom palette card + hue sliders ─────────────────────────────────
-        val customPrimaryPreview   = Color.hsl(customPrimaryHue,   0.5f, 0.4f)
-        val customSecondaryPreview = Color.hsl(customSecondaryHue, 0.4f, 0.4f)
-        val customTertiaryPreview  = Color.hsl(customTertiaryHue,  0.4f, 0.4f)
+        // ── Custom palette card + per-role colour pickers ─────────────────────
+        // Swatches show exactly what the applied theme will use for the
+        // currently selected custom mode.
+        val customPrimaryPreview   = resolveCustomRoleColor(customPrimaryArgb,   customPrimaryHue,   isPrimary = true,  isDark = customIsDark)
+        val customSecondaryPreview = resolveCustomRoleColor(customSecondaryArgb, customSecondaryHue, isPrimary = false, isDark = customIsDark)
+        val customTertiaryPreview  = resolveCustomRoleColor(customTertiaryArgb,  customTertiaryHue,  isPrimary = false, isDark = customIsDark)
 
         CustomPaletteOption(
-            selected       = currentTheme == AppTheme.CUSTOM,
+            selected       = isCustom,
             primaryColor   = customPrimaryPreview,
             secondaryColor = customSecondaryPreview,
             tertiaryColor  = customTertiaryPreview,
             onClick        = { onThemeSelected(AppTheme.CUSTOM) },
         )
 
-        AnimatedVisibility(visible = currentTheme == AppTheme.CUSTOM) {
+        AnimatedVisibility(visible = isCustom) {
             Column(
                 modifier            = Modifier.padding(top = 4.dp),
-                verticalArrangement = Arrangement.spacedBy(12.dp),
+                verticalArrangement = Arrangement.spacedBy(4.dp),
             ) {
-                CustomHueSlider("Primary",   customPrimaryHue,   customPrimaryPreview)   { onCustomHuesChange(it, customSecondaryHue, customTertiaryHue) }
-                CustomHueSlider("Secondary", customSecondaryHue, customSecondaryPreview) { onCustomHuesChange(customPrimaryHue, it, customTertiaryHue) }
-                CustomHueSlider("Tertiary",  customTertiaryHue,  customTertiaryPreview)  { onCustomHuesChange(customPrimaryHue, customSecondaryHue, it) }
+                CustomColorRow(
+                    label        = "Primary",
+                    color        = customPrimaryPreview,
+                    onArgbChange = { argb ->
+                        onCustomArgbsChange(argb, customSecondaryArgb, customTertiaryArgb)
+                        onCustomHuesChange(argb.hueDegrees(), customSecondaryHue, customTertiaryHue)
+                    },
+                )
+                CustomColorRow(
+                    label        = "Secondary",
+                    color        = customSecondaryPreview,
+                    onArgbChange = { argb ->
+                        onCustomArgbsChange(customPrimaryArgb, argb, customTertiaryArgb)
+                        onCustomHuesChange(customPrimaryHue, argb.hueDegrees(), customTertiaryHue)
+                    },
+                )
+                CustomColorRow(
+                    label        = "Tertiary",
+                    color        = customTertiaryPreview,
+                    onArgbChange = { argb ->
+                        onCustomArgbsChange(customPrimaryArgb, customSecondaryArgb, argb)
+                        onCustomHuesChange(customPrimaryHue, customSecondaryHue, argb.hueDegrees())
+                    },
+                )
+                CustomColorRow(
+                    label         = "Background (light)",
+                    color         = if (customLightBackgroundArgb != 0) Color(customLightBackgroundArgb) else null,
+                    autoFallback  = Color.hsl(customPrimaryPreview.hueDegreesOf(), 0.08f, 0.98f),
+                    onArgbChange  = { argb -> onCustomBackgroundArgbsChange(argb, customDarkBackgroundArgb) },
+                    onReset       = { onCustomBackgroundArgbsChange(0, customDarkBackgroundArgb) },
+                )
+                CustomColorRow(
+                    label         = "Background (dark)",
+                    color         = if (customDarkBackgroundArgb != 0) Color(customDarkBackgroundArgb) else null,
+                    autoFallback  = Color.hsl(customPrimaryPreview.hueDegreesOf(), 0.05f, 0.10f),
+                    onArgbChange  = { argb -> onCustomBackgroundArgbsChange(customLightBackgroundArgb, argb) },
+                    onReset       = { onCustomBackgroundArgbsChange(customLightBackgroundArgb, 0) },
+                )
             }
         }
     }
 }
+
+// ── Colour helpers ────────────────────────────────────────────────────────────
+
+private fun Int.hueDegrees(): Float {
+    val hsv = FloatArray(3)
+    android.graphics.Color.colorToHSV(this, hsv)
+    return hsv[0]
+}
+
+private fun Color.hueDegreesOf(): Float = toArgb().hueDegrees()
 
 // ── Palette circle ────────────────────────────────────────────────────────────
 
@@ -434,38 +518,79 @@ private fun CustomPaletteOption(
     }
 }
 
-// ── Hue slider row ────────────────────────────────────────────────────────────
+// ── Custom colour row (opens the shared picker dialog) ───────────────────────
 
+/**
+ * One row per customisable colour. Shows the resolved swatch and hex, and opens
+ * [ColorPickerDialog] on tap. For background rows [color] may be null, meaning
+ * "Auto" (derived from the primary colour); [autoFallback] seeds the picker and
+ * [onReset] restores Auto.
+ */
 @Composable
-private fun CustomHueSlider(
-    label: String,
-    hue: Float,
-    previewColor: Color,
-    onHueChange: (Float) -> Unit,
+private fun CustomColorRow(
+    label:        String,
+    color:        Color?,
+    onArgbChange: (Int) -> Unit,
+    autoFallback: Color? = null,
+    onReset:      (() -> Unit)? = null,
 ) {
-    Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
-        Row(
-            verticalAlignment     = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(8.dp),
-        ) {
-            Box(
-                modifier = Modifier
-                    .size(16.dp)
-                    .clip(CircleShape)
-                    .background(previewColor)
-                    .semantics { contentDescription = "$label colour preview" }
-            )
+    var showPicker by remember { mutableStateOf(false) }
+    val displayColor = color ?: autoFallback ?: Color.Gray
+    val isAuto       = color == null
+
+    if (showPicker) {
+        ColorPickerDialog(
+            label       = label,
+            currentArgb = displayColor.toArgb(),
+            onDismiss   = { showPicker = false },
+            onConfirm   = { newArgb ->
+                onArgbChange(newArgb)
+                showPicker = false
+            },
+        )
+    }
+
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .semantics { role = Role.Button }
+            .clickable { showPicker = true }
+            .padding(vertical = 10.dp),
+        verticalAlignment     = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(12.dp),
+    ) {
+        Box(
+            modifier = Modifier
+                .size(32.dp)
+                .clip(CircleShape)
+                .background(displayColor)
+                .border(1.dp, MaterialTheme.colorScheme.outline, CircleShape)
+        )
+        Text(
+            text     = label,
+            modifier = Modifier.weight(1f),
+            style    = MaterialTheme.typography.bodyMedium,
+        )
+        if (isAuto) {
             Text(
-                text  = label,
-                style = MaterialTheme.typography.bodySmall,
+                text  = "Auto",
+                style = MaterialTheme.typography.labelSmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
+        } else {
+            Text(
+                text  = "#%06X".format(displayColor.toArgb() and 0xFFFFFF),
+                style = MaterialTheme.typography.labelSmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+            if (onReset != null) {
+                TextButton(onClick = onReset) { Text("Auto") }
+            }
         }
-        Slider(
-            value         = hue,
-            onValueChange = onHueChange,
-            valueRange    = 0f..360f,
-            modifier      = Modifier.fillMaxWidth(),
+        Icon(
+            imageVector        = Icons.Default.ChevronRight,
+            contentDescription = null,
+            tint               = MaterialTheme.colorScheme.onSurfaceVariant,
         )
     }
 }
