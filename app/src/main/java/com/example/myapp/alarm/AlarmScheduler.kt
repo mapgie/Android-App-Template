@@ -4,12 +4,19 @@ import android.app.AlarmManager
 import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
+import android.net.Uri
 import android.os.Build
 import dagger.hilt.android.qualifiers.ApplicationContext
 import java.time.Instant
 import javax.inject.Inject
 import javax.inject.Singleton
 
+// Every alarm intent is stamped with a unique data URI. PendingIntent identity is
+// (request code + Intent.filterEquals), and filterEquals ignores extras — with only
+// hashCode-derived request codes, two ids whose hashes collide would silently cancel
+// or clobber each other's alarms. The URI makes every id a distinct intent regardless
+// of request code. If you change this identity scheme in a shipped app, sweep-cancel
+// the old form once on MY_PACKAGE_REPLACED or old alarms stay armed alongside new ones.
 @Singleton
 class AlarmScheduler @Inject constructor(
     @ApplicationContext private val context: Context
@@ -59,10 +66,13 @@ class AlarmScheduler @Inject constructor(
      * Cancels any pending alarm for [id]. Safe to call when no alarm is scheduled.
      */
     fun cancel(id: String) {
+        val intent = Intent(context, AlarmReceiver::class.java)
+            .setPackage(context.packageName)
+            .setData(alarmUri(id))
         val pending = PendingIntent.getBroadcast(
             context,
             requestCode(id),
-            Intent(context, AlarmReceiver::class.java).setPackage(context.packageName),
+            intent,
             PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
         )
         alarmManager.cancel(pending)
@@ -76,9 +86,12 @@ class AlarmScheduler @Inject constructor(
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) alarmManager.canScheduleExactAlarms()
         else true
 
+    private fun alarmUri(id: String): Uri = Uri.parse("myapp://alarm/$id")
+
     private fun buildPendingIntent(id: String, title: String, deliveryMode: String): PendingIntent {
         val intent = Intent(context, AlarmReceiver::class.java).apply {
             setPackage(context.packageName)
+            data = alarmUri(id)
             putExtra(AlarmReceiver.EXTRA_ID, id)
             putExtra(AlarmReceiver.EXTRA_TITLE, title)
             putExtra(AlarmReceiver.EXTRA_DELIVERY_MODE, deliveryMode)

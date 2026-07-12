@@ -19,6 +19,13 @@ Rules:
 
 ---
 
+## [0.5.4-beta.1] - 2026-07-12
+
+### Fixed
+- Alarm PendingIntents are now stamped with a unique data URI, so two reminder ids with colliding `String.hashCode()` request codes can no longer cancel or overwrite each other's alarms.
+
+---
+
 ## [0.5.3-beta.1] - 2026-07-06
 
 ### Fixed
