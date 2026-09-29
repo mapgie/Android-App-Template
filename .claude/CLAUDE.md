@@ -2,6 +2,10 @@
 
 When fixing a bug or solving a non-obvious problem, check `LESSONS.md` for prior art. If the fix produces a transferable lesson, add it to `LESSONS.md` in the same commit.
 
+## Working with Claude Code sessions
+
+- Don't schedule check-ins, reminders or other future wake-ups (`send_later`, routines, triggers) unless the user asks for one. Subscribing to a PR's activity is fine when asked to watch it, but don't add timed re-checks on top.
+
 ## Versioning
 
 Every PR that touches app code **must** add a changelog fragment. No exceptions.
